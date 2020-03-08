@@ -1,7 +1,11 @@
 import pathlib
 import urllib.request
 import numpy
+import pandas
+import random
 import astropy.io.fits
+import astropy.wcs
+import astroquery.vizier
 import PIL
 import n2
 
@@ -163,3 +167,113 @@ def make_rgb_fits(paths_mips, paths_glim, save_path='../data/interim/gal'):
     b_hdu_list.writeto(save_path/'b.fits', overwrite=True)
     
     return
+
+#######################
+###=== tmp start ===###
+#######################
+
+def get_bubble_table():
+    # make instance
+    viz = astroquery.vizier.Vizier(columns=['*'])
+    viz.ROW_LIMIT = -1
+    # load bub_2006
+    bub_2006 = viz.query_constraints(catalog='J/ApJ/649/759/bubbles')[0].to_pandas()
+    bub_2006.loc[:, '__CPA2006_'] = bub_2006.loc[:, '__CPA2006_'].str.decode('utf-8')
+    bub_2006.loc[:, 'MFlags'] = bub_2006.loc[:, 'MFlags'].str.decode('utf-8')
+    # load bub_2007
+    bub_2007 = viz.query_constraints(catalog='J/ApJ/670/428/bubble')[0].to_pandas()
+    bub_2007.loc[:, '__CWP2007_'] = bub_2007.loc[:, '__CWP2007_'].str.decode('utf-8')
+    bub_2007.loc[:, 'MFlags'] = bub_2007.loc[:, 'MFlags'].str.decode('utf-8')
+    # convert to pandas for 2006
+    bub_2006.rename(columns={'__CPA2006_': 'name'}, inplace=True)
+    bub_2006.rename(columns={'GLON': 'l'}, inplace=True)
+    bub_2006.rename(columns={'GLAT': 'b'}, inplace=True)
+    bub_2006.rename(columns={'__R_': '<R>'}, inplace=True)
+    bub_2006.rename(columns={'__T_': '<T>'}, inplace=True)
+    bub_2006.rename(columns={'MFlags': 'Flags'}, inplace=True)
+    bub_2006.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
+    bub_2006.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
+    bub_2006 = bub_2006.set_index('name')
+    # convert to pandas for 2007
+    bub_2007.rename(columns={'__CWP2007_': 'name'}, inplace=True)
+    bub_2007.rename(columns={'GLON': 'l'}, inplace=True)
+    bub_2007.rename(columns={'GLAT': 'b'}, inplace=True)
+    bub_2007.rename(columns={'__R_': '<R>'}, inplace=True)
+    bub_2007.rename(columns={'__T_': '<T>'}, inplace=True)
+    bub_2007.rename(columns={'MFlags': 'Flags'}, inplace=True)
+    bub_2007.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
+    bub_2007.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
+    for i in bub_2007.index:
+        bub_2007.loc[i, 'name'] = bub_2007.loc[i, 'name'].replace(' ', '')
+        pass
+    bub_2007 = bub_2007.set_index('name')
+    # concat 2006 and 2007
+    bub = pandas.concat([bub_2006, bub_2007])
+    return bub
+
+def _get_dir(sample, path):
+    files = list(pathlib.Path(path).expanduser().glob('*'))
+    over_358p5 = sample.loc[:, 'l']>358.5
+    for i in sample[over_358p5].loc[:, 'l'].index:
+        sample.loc[i, 'l'] -= 360
+
+    for file in files:
+        file = str(file).split('/')[-1]
+        l_center = float(file[8:11])
+        l_min = l_center - 1.5
+        l_max = l_center + 1.5
+        _slice = (sample.loc[:, 'l']>=l_min)&(sample.loc[:, 'l']<l_max)
+        for i in sample.loc[_slice].index:
+            sample.loc[i, 'directory'] = file
+            pass
+        pass
+
+    under_0p0 = sample.loc[:, 'l']<0
+    for i in sample[under_0p0].loc[:, 'l'].index:
+        sample.loc[i, 'l'] += 360
+
+    # drop NaN file line
+    sample = sample.dropna(subset=['directory'])
+    return sample
+
+def get_sample_table(bub=get_bubble_table(), fac=10, R_range = [0, 10]):
+    l = [i for i in range(0, 66, 3)] + [i for i in range(297, 360, 3)]
+    b = [-0.8, 0.8] # deg
+    R = [0.1, 10] # arcmin
+    l_bub = bub.loc[:, 'l'].tolist()
+    b_bub = bub.loc[:, 'b'].tolist()
+    R_bub = bub.loc[:, 'Rout'].tolist()
+    # Generate coordinates and size randomly within specified range    
+    name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
+    while len(glon_li) < len(bub)*fac:
+        l_range = 2
+        l_center = random.choice(l)
+        l_fac = numpy.random.rand()
+        b_fac = numpy.random.rand()
+        s_fac = numpy.random.rand()
+        i_l = round((l_range*l_fac) + l_center - (l_range/2), 3)
+        i_b = round((b[1] - b[0])*b_fac + b[0], 3)
+        i_R = round((R[1] - R[0])*s_fac + R[0], 2)
+        # Select one that does not overlap with the bubble catalog
+        distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
+        _min = [(i_R/60 + j_R/60)**2 for j_R in R_bub]
+        if all([_d > _m for _d, _m in zip(distance, _min)]):
+            name.append('F{}'.format(i_n))
+            glon_li.append(i_l)
+            glat_li.append(i_b)
+            size_li.append(i_R)
+            i_n += 1
+        else: pass
+    nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+    nbub = nbub.set_index('name')
+    # add columns for label
+    bub = bub.assign(label=1)
+    nbub = nbub.assign(label=0)
+    sample = bub.append(nbub)[bub.columns.tolist()]
+    sample = sample.loc[(sample.loc[:, 'Rout']>R_range[0])&(sample.loc[:, 'Rout']<R_range[1])]    
+    sample = _get_dir(sample, path='~/jupyter/spitzer_bubble/data/interim/gal')
+    return sample
+
+#####################
+###=== tmp end ===###
+#####################
