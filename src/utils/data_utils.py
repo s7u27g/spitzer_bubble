@@ -127,29 +127,22 @@ def _nparr_sum(nparr1, nparr2):
 def _new_header(header):
     header.pop('HISTORY*')
     header.pop('N2HASH')
-    header.set('NAXIS', 3)
-    header.set('NAXIS3', 3, after='NAXIS2')
     return header
 
-def make_rgb_fits(paths_mips, paths_glim, save_path='../data/interim/'):
-    '''
-    example of usage:
-        make_rgb_fits(*get_fits_paths(51), save_path='../data/interim/gal')
-    '''
+def make_rgb_fits(paths_mips, paths_glim, save_path='../data/interim/gal'):
     save_path = pathlib.Path(save_path).expanduser().resolve()
+    save_path = save_path/('spitzer_' + paths_glim[1].name[4:14] + '_rgb')
     save_path.mkdir(parents=True, exist_ok=True)
-    save_name = 'spitzer_gal_' + paths_glim[1].name[4:14] + '_rgb.fits'
     
     rs_hdu_raw = [n2.open_fits(i) for i in paths_mips]
     g_hdu_raw = n2.open_fits(paths_glim[1])
     b_hdu_raw = n2.open_fits(paths_glim[0])
     
-    g_header = g_hdu_raw.hdu.header
-    rgb_header = g_header.copy()
-    
-    rs_hdu = [i.regrid(rgb_header) for i in rs_hdu_raw]
-    g_hdu = g_hdu_raw.regrid(rgb_header)
-    b_hdu = b_hdu_raw.regrid(rgb_header)
+    header = g_hdu_raw.hdu.header.copy()
+    rs_hdu = [i.regrid(header) for i in rs_hdu_raw]
+    #g_hdu = g_hdu_raw.regrid(header)
+    g_hdu = g_hdu_raw
+    b_hdu = b_hdu_raw.regrid(header)
     
     r1 = _nparr_sum(rs_hdu[0].data, rs_hdu[1].data)
     r2 = _nparr_sum(rs_hdu[2].data, rs_hdu[3].data)
@@ -158,11 +151,15 @@ def make_rgb_fits(paths_mips, paths_glim, save_path='../data/interim/'):
     r = _nparr_sum(r3, r4)    
     g = numpy.nan_to_num(g_hdu.data)
     b = numpy.nan_to_num(b_hdu.data)
-    rgb_data = numpy.stack([r, g, b], 0)
     
-    rgb_header = _new_header(rgb_header)
-    rgb_hdu = astropy.io.fits.PrimaryHDU(rgb_data, rgb_header)
-    hdu_list = astropy.io.fits.HDUList([rgb_hdu])
-    hdu_list.writeto(save_path/save_name, overwrite=True)
+    r_hdu = astropy.io.fits.PrimaryHDU(r, _new_header(rs_hdu[0].header))
+    g_hdu = astropy.io.fits.PrimaryHDU(g, _new_header(g_hdu.header))
+    b_hdu = astropy.io.fits.PrimaryHDU(b, _new_header(b_hdu.header))    
+    r_hdu_list = astropy.io.fits.HDUList([r_hdu])
+    g_hdu_list = astropy.io.fits.HDUList([g_hdu])
+    b_hdu_list = astropy.io.fits.HDUList([b_hdu])
+    r_hdu_list.writeto(save_path/'r.fits', overwrite=True)
+    g_hdu_list.writeto(save_path/'g.fits', overwrite=True)
+    b_hdu_list.writeto(save_path/'b.fits', overwrite=True)
     
     return
