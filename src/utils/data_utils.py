@@ -27,6 +27,33 @@ def download_mipsgal_data(l, b, save_path):
             
     return
 
+def make_mipsgal_293data(b, save_path):
+    '''
+    b must be str, 'p' or 'n'.
+    '''
+    path = pathlib.Path(save_path)    
+    file_dict = {
+        0: (path/'MG2930{}005_024.fits'.format(b)).expanduser(),
+        1: (path/'MG2940{}005_024.fits'.format(b)).expanduser(),
+        2: (path/'MG2950{}005_024.fits'.format(b)).expanduser(),
+    }
+    files = file_dict[1], file_dict[2]
+    hdus = astropy.io.fits.open(files[0])[0], astropy.io.fits.open(files[1])[0]
+    
+    header, data = hdus[0].header, hdus[0].data
+    d_l = hdus[1].header['CRVAL1'] - hdus[0].header['CRVAL1']
+    
+    header['CRVAL1'] = header['CRVAL1'] - d_l
+    header['FILENAME'] = file_dict[0].name
+    data = numpy.nan_to_num(data)
+    data = numpy.where(data>0.0, 0.0, 0.0)
+    data = data.astype(numpy.float32)
+    new_hdu = astropy.io.fits.PrimaryHDU(data, header)
+    new_hdul = astropy.io.fits.HDUList([new_hdu])
+    new_hdul.writeto(file_dict[0], overwrite=True)
+    
+    return
+
 def download_glimpse_data(l, band, save_path):
     '''
     l must be int (recommended multiple of 3) from 0 to 359.
@@ -94,8 +121,8 @@ def get_fits_paths(l):
     l must be int (recommended multiple of 3) from 0 to 359.
     '''
     l = (lambda l: (l//3+1)*3 if l%3 > 1.5 else (l//3)*3)(l)
-    path_mips = pathlib.Path('../data/raw/mipsgal/').expanduser().resolve()
-    path_glim = pathlib.Path('../data/raw/glimpse/').expanduser().resolve() 
+    path_mips = pathlib.Path('~/jupyter/spitzer_bubble/data/raw/mipsgal/').expanduser().resolve()
+    path_glim = pathlib.Path('~/jupyter/spitzer_bubble/data/raw/glimpse/').expanduser().resolve() 
     
     paths_mips = [
         path_mips/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l-1)))+str(l-1)),
@@ -133,7 +160,7 @@ def _new_header(header):
     header.pop('N2HASH')
     return header
 
-def make_rgb_fits(paths_mips, paths_glim, save_path='../data/interim/gal'):
+def make_rgb_fits(paths_mips, paths_glim, save_path='~/jupyter/spitzer_bubble/data/interim/gal'):
     save_path = pathlib.Path(save_path).expanduser().resolve()
     save_path = save_path/('spitzer_' + paths_glim[1].name[4:14] + '_rgb')
     save_path.mkdir(parents=True, exist_ok=True)
