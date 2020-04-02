@@ -64,13 +64,14 @@ class SpitzerDf(object):
         seed: int or float
         '''
         if not isinstance(path, pathlib.Path):
-            path = pathlib.Path(path)
+            path = pathlib.Path(path).expanduser()
             pass
         
         self.path = path
         self.files = [i.name for i in list(self.path.glob('*'))]
         self.df = get_bubble_df()
         self._add_random_df(fac, b, R, seed)
+        self.df_org = self.df.copy()
         self._get_dir()
         pass
     
@@ -108,7 +109,7 @@ class SpitzerDf(object):
         self.df = self.df.assign(label=1)
         nbub = nbub.assign(label=0)
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
-        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]    
+        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
         return
     
     def _get_dir(self):
@@ -148,11 +149,21 @@ class SpitzerDf(object):
     def limit_R(self, R_min, R_max):
         pass
     
-    def get_bub_df(self):
-        pass
+    def drop_label(self, label):
+        self.df = self.df[self.df.loc[:,'label']!=label]
+        return
     
-    def get_nbub_df(self):
-        pass
+    def drop_obj(self, objs):
+        self.df = self.df.drop(objs, axis=0)
+        return
+    
+    def select_obj(self, objs):
+        self.df = self.df.loc[objs]
+        return
+    
+    def reset_df(self):
+        self.df = self.df_org
+        return
     
     def get_dir(self):
         dir_ = self.df.loc[:, 'directory'].unique().tolist()
@@ -229,8 +240,26 @@ class CutTable(object):
         g = self.data['g'][y_pix_min:y_pix_max, x_pix_min:x_pix_max]
         b = self.data['b'][y_pix_min:y_pix_max, x_pix_min:x_pix_max]
         rgb = numpy.stack([r, g, b], 2)
+        rgb = self._padding_obj(rgb, x_pix_min, y_pix_min)
         rgb = numpy.flipud(rgb)
         return rgb
     
+    def _padding_obj(self, data, x_pix_min, y_pix_min):
+        pad = data.shape[0] - data.shape[1]
+        if pad > 0 and x_pix_min == 0:
+            data = numpy.pad(data, [(0, 0),(pad, 0), (0, 0)])
+            pass    
+        if pad > 0 and x_pix_min != 0:
+            data = numpy.pad(data, [(0, 0),(0, pad), (0, 0)])
+            pass
+        if pad < 0 and y_pix_min == 0:
+            data = numpy.pad(data, [(abs(pad), 0),(0, 0), (0, 0)])
+            pass    
+        if pad < 0 and y_pix_min != 0:
+            data = numpy.pad(data, [(0, abs(pad)),(0, 0), (0, 0)])
+            pass    
+        return data
+    
     def get_obj(self):
         return self.df.index.to_list()
+    
