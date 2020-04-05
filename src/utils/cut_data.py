@@ -242,6 +242,7 @@ class CutTable(object):
         rgb = numpy.stack([r, g, b], 2)
         rgb = self._padding_obj(rgb, x_pix_min, y_pix_min)
         rgb = numpy.flipud(rgb)
+        rgb = numpy.expand_dims(rgb, axis=0)
         return rgb
     
     def _padding_obj(self, data, x_pix_min, y_pix_min):
