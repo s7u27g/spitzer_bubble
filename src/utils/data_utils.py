@@ -116,76 +116,123 @@ def download_sage_data(band, save_path):
             
     return
 
-def get_fits_paths(l):
-    '''
-    l must be int (recommended multiple of 3) from 0 to 359.
-    '''
+def get_mipsfits_paths(l):
     l = (lambda l: (l//3+1)*3 if l%3 > 1.5 else (l//3)*3)(l)
-    path_mips = pathlib.Path('~/jupyter/spitzer_bubble/data/raw/mipsgal/').expanduser().resolve()
-    path_glim = pathlib.Path('~/jupyter/spitzer_bubble/data/raw/glimpse/').expanduser().resolve() 
-    
+    path = pathlib.Path(
+        '~/jupyter/spitzer_bubble/data/raw/download/mipsgal/'
+    ).expanduser().resolve()
     paths_mips = [
-        path_mips/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l-1)))+str(l-1)),
-        path_mips/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l-1)))+str(l-1)),
-        path_mips/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l)))+str(l)),
-        path_mips/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l)))+str(l)),
-        path_mips/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l+1)))+str(l+1)),
-        path_mips/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l+1)))+str(l+1)),
-    ]
-    
-    paths_glim = [
-        path_glim/'irac1/GLM_{}00+0000_mosaic_I1.fits'.format('0'*(3-len(str(l)))+str(l)),
-        path_glim/'irac4/GLM_{}00+0000_mosaic_I4.fits'.format('0'*(3-len(str(l)))+str(l)),
+        path/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l-1)))+str(l-1)),
+        path/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l-1)))+str(l-1)),
+        path/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l)))+str(l)),
+        path/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l)))+str(l)),
+        path/'mips24/MG{}0n005_024.fits'.format('0'*(3-len(str(l+1)))+str(l+1)),
+        path/'mips24/MG{}0p005_024.fits'.format('0'*(3-len(str(l+1)))+str(l+1)),
     ]
     
     if l == 0:
-        paths_mips[0] = path_mips/'mips24/MG3590n005_024.fits'
-        paths_mips[1] = path_mips/'mips24/MG3590p005_024.fits'
+        paths_mips[0] = path/'mips24/MG3590n005_024.fits'
+        paths_mips[1] = path/'mips24/MG3590p005_024.fits'
     else:
         pass
     
-    return paths_mips, paths_glim
+    return paths_mips
 
-def _nparr_sum(nparr1, nparr2):
-    r1 = numpy.nan_to_num(nparr1)
-    r2 = numpy.nan_to_num(nparr2)
-    r1_bool = numpy.where(r1==0, False, True)
-    r2_bool = numpy.where(r2==0, False, True)
-    r_bool = numpy.logical_and(r1_bool, r2_bool)
-    r = numpy.where(r_bool==True, (r1+r2)/2, r1+r2)
-    return r
+def get_fits_paths(l):
+    l = (lambda l: (l//3+1)*3 if l%3 > 1.5 else (l//3)*3)(l)
+    path_mips24 = pathlib.Path(
+        '~/jupyter/spitzer_bubble/data/raw/download/mipsgal/mips24_concat'
+    ).expanduser().resolve()
+    path_irac4 = pathlib.Path(
+        '~/jupyter/spitzer_bubble/data/raw/download/glimpse/irac4'
+    ).expanduser().resolve()
+    path_irac1 = pathlib.Path(
+        '~/jupyter/spitzer_bubble/data/raw/download/glimpse/irac1'
+    ).expanduser().resolve()
+    
+    paths = [
+        path_mips24/'MPG_{}00+0000_mosaic_M1.fits'.format('0'*(3-len(str(l)))+str(l)),
+        path_irac4/'GLM_{}00+0000_mosaic_I4.fits'.format('0'*(3-len(str(l)))+str(l)),
+        path_irac1/'GLM_{}00+0000_mosaic_I1.fits'.format('0'*(3-len(str(l)))+str(l)),
+    ]
+    
+    return paths
+
+def montage(rf_paths, save_path, interim_path='.'):
+    '''
+    rf_paths: raw fits path list
+    save_path:
+    interim_path:
+    '''
+    _tmp = str(save_path).replace('/', '-').split('.')[0][1:]
+    tmp_path = pathlib.Path(interim_path).expanduser().resolve()/('.montage/'+_tmp)
+    (tmp_path/'raw').mkdir(exist_ok=True, parents=True)
+    (tmp_path/'raw_proj').mkdir(exist_ok=True, parents=True)
+    
+    for i, file in enumerate(rf_paths):
+        cp_from = file
+        cp_to = tmp_path/'raw/{}.fits'.format(i)
+        subprocess.run(['cp', cp_from, cp_to])
+        pass
+    
+    subprocess.run(['mImgtbl', tmp_path/'raw', tmp_path/'images.tbl'])
+    subprocess.run(['mMakeHdr', tmp_path/'images.tbl', tmp_path/'template.hdr', 'GAL'])
+    for file in sorted((tmp_path/'raw').glob('*')):
+        subprocess.run(['mProjectCube', file, tmp_path/'raw_proj'/(file.stem+'_proj.fits'), tmp_path/'template.hdr'])
+    subprocess.run(['mImgtbl', tmp_path/'raw_proj', tmp_path/'resultimages.tbl'])
+    subprocess.run(['mAdd', '-p', tmp_path/'raw_proj', tmp_path/'resultimages.tbl', tmp_path/'template.hdr', tmp_path/'result.fits'])
+    
+    subprocess.run(['mv', tmp_path/'result.fits', save_path])
+    subprocess.run(['rm', '-r', tmp_path])
+    return
+
+def _concat_mipsfits(l):
+    '''
+    l: l must be int (recommended multiple of 3) from 0 to 359.
+    '''
+    path = pathlib.Path(
+        '~/jupyter/spitzer_bubble/data/raw/download/mipsgal/mips24_concat'
+    ).expanduser().resolve()
+    path.mkdir(exist_ok=True)    
+    func = lambda l: (l//3+1)*3 if l%3 > 1.5 else (l//3)*3
+    _l = str(func(l))+'00'
+    while len(_l)!=5:
+        _l = '0'+_l
+    file_name = 'MPG_'+_l+'+0000_mosaic_M1'+'.fits'
+    montage(get_mipsfits_paths(l), path/file_name, path)
+    return
+
+def concat_mipsfits(l_list):
+    '''
+    l_list: list of l (must be int (recommended multiple of 3) from 0 to 359).
+    '''
+    for l in l_list:
+        _concat_mipsfits(l)
+        pass
+    return
 
 def _new_header(header):
     header.pop('HISTORY*')
     header.pop('N2HASH')
     return header
 
-def make_rgb_fits(paths_mips, paths_glim, save_path='~/jupyter/spitzer_bubble/data/interim/gal'):
+def make_rgb_fits(paths, save_path='~/jupyter/spitzer_bubble/data/raw/regrid/gal'):
     save_path = pathlib.Path(save_path).expanduser().resolve()
-    save_path = save_path/('spitzer_' + paths_glim[1].name[4:14] + '_rgb')
+    save_path = save_path/('spitzer_' + paths[1].name[4:14] + '_rgb')
     save_path.mkdir(parents=True, exist_ok=True)
     
-    rs_hdu_raw = [n2.open_fits(i) for i in paths_mips]
-    g_hdu_raw = n2.open_fits(paths_glim[1])
-    b_hdu_raw = n2.open_fits(paths_glim[0])
+    r_hdu_raw = n2.open_fits(paths[0])
+    g_hdu_raw = n2.open_fits(paths[1])
+    b_hdu_raw = n2.open_fits(paths[2])
     
     header = g_hdu_raw.hdu.header.copy()
-    rs_hdu = [i.regrid(header) for i in rs_hdu_raw]
-    #g_hdu = g_hdu_raw.regrid(header)
+    r_hdu = r_hdu_raw.regrid(header)
     g_hdu = g_hdu_raw
     b_hdu = b_hdu_raw.regrid(header)
     
-    r1 = _nparr_sum(rs_hdu[0].data, rs_hdu[1].data)
-    r2 = _nparr_sum(rs_hdu[2].data, rs_hdu[3].data)
-    r3 = _nparr_sum(rs_hdu[4].data, rs_hdu[5].data)
-    r4 = _nparr_sum(r1, r2)
-    r = _nparr_sum(r3, r4)    
-    g = numpy.nan_to_num(g_hdu.data)
-    b = numpy.nan_to_num(b_hdu.data)
-    
-    r_hdu = astropy.io.fits.PrimaryHDU(r, _new_header(rs_hdu[0].header))
-    g_hdu = astropy.io.fits.PrimaryHDU(g, _new_header(g_hdu.header))
-    b_hdu = astropy.io.fits.PrimaryHDU(b, _new_header(b_hdu.header))    
+    r_hdu = astropy.io.fits.PrimaryHDU(r_hdu.data, _new_header(r_hdu.header))
+    g_hdu = astropy.io.fits.PrimaryHDU(g_hdu.data, _new_header(g_hdu.header))
+    b_hdu = astropy.io.fits.PrimaryHDU(b_hdu.data, _new_header(b_hdu.header))    
     r_hdu_list = astropy.io.fits.HDUList([r_hdu])
     g_hdu_list = astropy.io.fits.HDUList([g_hdu])
     b_hdu_list = astropy.io.fits.HDUList([b_hdu])
