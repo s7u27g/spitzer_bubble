@@ -8,6 +8,8 @@ import astropy.wcs
 import astroquery.vizier
 import PIL
 import n2
+import subprocess
+from multiprocessing import Process
 
 def download_mipsgal_data(l, b, save_path):
     '''
