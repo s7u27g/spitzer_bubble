@@ -80,6 +80,6 @@ def wise_hii():
     df.rename(columns={'GLAT': 'b'}, inplace=True)
     df.rename(columns={'Rad': 'Rout'}, inplace=True)
     df.rename(columns={'Name': 'Hii_name'}, inplace=True)
+    df.loc[:, 'Rout'] = df.loc[:, 'Rout']/60
     df = df.set_index('name')
     return df
-
