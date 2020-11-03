@@ -1,4 +1,16 @@
 import json
+import shutil
+import zipfile
+
+def make_zipfile(directory):
+    shutil.make_archive(directory, 'zip', root_dir=directory)
+    return
+
+def unzip_zipfile(file):
+    with zipfile.ZipFile(file_name+'.zip') as zf: 
+        zf.extractall(file_name) 
+        pass
+    return
 
 def open_json(file):
     with open(file, 'r') as f:
@@ -11,6 +23,8 @@ def save_json(file, dictlist):
         json.dump(dictlist, f, cls = MyEncoder)
         pass
     return
+
+
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
