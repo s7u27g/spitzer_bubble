@@ -7,7 +7,7 @@ def data_view(col, imgs, infos=None):
     imgs: tensor or nparray with a shape of (?, y, x, 1) or (?, y, x, 3)
     infos: dictonary from CutTable
     '''
-    imgs = np.uint8(imgs[:, :, :, 0]) if imgs.shape[3] == 1 else np.uint8(imgs)
+    imgs = np.uint8(imgs[:,::-1,:,0]) if imgs.shape[3] == 1 else np.uint8(imgs[:,::-1])
     row = (lambda x, y: x//y if x/y-x//y==0.0 else x//y+1)(imgs.shape[0], col)
     dst = Image.new('RGB', (imgs.shape[1]*col, imgs.shape[2]*row))
 

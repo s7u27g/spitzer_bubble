@@ -6,48 +6,10 @@ import PIL.Image
 import astropy.io.fits
 import astroquery.vizier
 import tensorflow
+from . import get_catalog
 
-def get_bubble_df():
-    # make instance
-    viz = astroquery.vizier.Vizier(columns=['*'])
-    viz.ROW_LIMIT = -1
-    # load bub_2006
-    bub_2006 = viz.query_constraints(catalog='J/ApJ/649/759/bubbles')[0].to_pandas()
-    bub_2006.loc[:, '__CPA2006_'] = bub_2006.loc[:, '__CPA2006_'].str.decode('utf-8')
-    bub_2006.loc[:, 'MFlags'] = bub_2006.loc[:, 'MFlags'].str.decode('utf-8')
-    # load bub_2007
-    bub_2007 = viz.query_constraints(catalog='J/ApJ/670/428/bubble')[0].to_pandas()
-    bub_2007.loc[:, '__CWP2007_'] = bub_2007.loc[:, '__CWP2007_'].str.decode('utf-8')
-    bub_2007.loc[:, 'MFlags'] = bub_2007.loc[:, 'MFlags'].str.decode('utf-8')
-    # convert to pandas for 2006
-    bub_2006.rename(columns={'__CPA2006_': 'name'}, inplace=True)
-    bub_2006.rename(columns={'GLON': 'l'}, inplace=True)
-    bub_2006.rename(columns={'GLAT': 'b'}, inplace=True)
-    bub_2006.rename(columns={'__R_': '<R>'}, inplace=True)
-    bub_2006.rename(columns={'__T_': '<T>'}, inplace=True)
-    bub_2006.rename(columns={'MFlags': 'Flags'}, inplace=True)
-    bub_2006.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
-    bub_2006.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
-    bub_2006 = bub_2006.set_index('name')
-    # convert to pandas for 2007
-    bub_2007.rename(columns={'__CWP2007_': 'name'}, inplace=True)
-    bub_2007.rename(columns={'GLON': 'l'}, inplace=True)
-    bub_2007.rename(columns={'GLAT': 'b'}, inplace=True)
-    bub_2007.rename(columns={'__R_': '<R>'}, inplace=True)
-    bub_2007.rename(columns={'__T_': '<T>'}, inplace=True)
-    bub_2007.rename(columns={'MFlags': 'Flags'}, inplace=True)
-    bub_2007.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
-    bub_2007.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
-    for i in bub_2007.index:
-        bub_2007.loc[i, 'name'] = bub_2007.loc[i, 'name'].replace(' ', '')
-        pass
-    bub_2007 = bub_2007.set_index('name')
-    # concat 2006 and 2007
-    bub = pandas.concat([bub_2006, bub_2007])
-    return bub
-
-def get_spitzer_df(path, fac, b=[-0.8, 0.8], R=[0.1, 10], seed=None):
-    return SpitzerDf(path, fac, b, R, seed)
+def get_spitzer_df(path, fac, b=[-0.8, 0.8], R=[0.1, 10], seed=None, catalog='churchwell'):
+    return SpitzerDf(path, fac, b, R, seed, catalog)
 
 
 class SpitzerDf(object):
@@ -55,7 +17,7 @@ class SpitzerDf(object):
     files = None
     df = None
     
-    def __init__(self, path, fac, b, R, seed):
+    def __init__(self, path, fac, b, R, seed, catalog):
         '''
         path: str or pathlib.Path
         fac: int or float
@@ -69,8 +31,27 @@ class SpitzerDf(object):
         
         self.path = path
         self.files = [i.name for i in list(self.path.glob('*'))]
-        self.df = get_bubble_df()
-        self._add_random_df(fac, b, R, seed)
+        
+        if isinstance(catalog, str):
+            
+            if catalog == 'churchwell':
+                self.df = get_catalog.churchwell_bubble()
+                pass
+        
+            elif catalog == 'mwp':
+                self.df = get_catalog.mwp_bubble()
+                pass
+            
+            else:
+                print('no catalog')
+                pass
+        
+        else:
+            self.df = catalog
+            pass
+        
+#         self._add_random_df(fac, b, R, seed)
+        self._add_random_df2(fac, b, R, seed)
         self.df_org = self.df.copy()
         self._get_dir()
         pass
@@ -112,6 +93,62 @@ class SpitzerDf(object):
         self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
         return
     
+    def _add_random_df2(self, fac, b, R, seed):
+        random.seed(seed)
+        numpy.random.seed(seed)
+        l = sorted([int(i[8:11]) for i in self.files])
+        l.pop(l.index(294))
+        l_bub = self.df.loc[:, 'l'].tolist()
+        b_bub = self.df.loc[:, 'b'].tolist()
+        R_bub = self.df.loc[:, 'Rout'].tolist()
+        
+        hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
+        num, y_ = hist[0]*fac, hist[1]
+        diff_ = y_[1:]-y_[:-1]
+        
+        R_nbub = []
+        for i in range(len(num)):
+            R_nbub_ = numpy.array(
+                [numpy.random.rand()*diff_[i] + y_[i] for j in range(num[i])]
+            )
+            R_nbub.append(R_nbub_)
+            pass
+        
+        R_nbub = numpy.concatenate(R_nbub)
+        
+        # Generate coordinates and size randomly within specified range    
+        name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
+        for R_nbub_ in R_nbub:
+            l_range = 2
+            flag = True
+            while flag:
+                l_center = random.choice(l)
+                l_fac = numpy.random.rand()
+                b_fac = numpy.random.rand()
+                i_l = round((l_range*l_fac) + l_center - (l_range/2), 3)
+                i_b = round((b[1] - b[0])*b_fac + b[0], 3)
+                i_R = round(R_nbub_, 2)
+                # Select one that does not overlap with the bubble catalog
+                distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
+                _min = [(i_R/60 + j_R/60)**2 for j_R in R_bub]
+                if all([_d > _m for _d, _m in zip(distance, _min)]):
+                    name.append('F{}'.format(i_n))
+                    glon_li.append(i_l)
+                    glat_li.append(i_b)
+                    size_li.append(i_R)
+                    i_n += 1
+                    flag = False
+                    pass
+                
+        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+        nbub = nbub.set_index('name')
+        # add columns for label
+        self.df = self.df.assign(label=1)
+        nbub = nbub.assign(label=0)
+        self.df = self.df.append(nbub)[self.df.columns.tolist()]
+        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+        return
+    
     def _get_dir(self):
         files = self.path.glob('*')
         over_358p5 = self.df.loc[:, 'l']>358.5
@@ -141,13 +178,22 @@ class SpitzerDf(object):
         return CutTable(self.path/dir_, df, margin)
     
     def limit_l(self, l_min, l_max):
+        mask_min = self.df.loc[:, 'l']>l_min
+        mask_max = self.df.loc[:, 'l']<l_max
+        self.df = self.df.loc[mask_min&mask_max]
         pass
     
     def limit_b(self, b_min, b_max):
+        mask_min = self.df.loc[:, 'b']>b_min
+        mask_max = self.df.loc[:, 'b']<b_max
+        self.df = self.df.loc[mask_min&mask_max]
         pass
     
     def limit_R(self, R_min, R_max):
-        pass
+        mask_min = self.df.loc[:, 'Rout']>R_min
+        mask_max = self.df.loc[:, 'Rout']<R_max
+        self.df = self.df.loc[mask_min&mask_max]
+        return
     
     def drop_label(self, label):
         self.df = self.df[self.df.loc[:,'label']!=label]
@@ -167,7 +213,7 @@ class SpitzerDf(object):
     
     def get_dir(self):
         dir_ = self.df.loc[:, 'directory'].unique().tolist()
-        return dir_
+        return sorted(dir_)
 
 
 class CutTable(object):
@@ -178,7 +224,7 @@ class CutTable(object):
     
     def __init__(self, path, df, margin):
         self.path = path
-        self.df = df.drop("directory", axis=1)
+        self.df = df
         self.df = self.df.assign(margin=numpy.nan)
         self.df = self.df.assign(x_pix_min=0)
         self.df = self.df.assign(x_pix_max=0)
@@ -204,9 +250,7 @@ class CutTable(object):
         return '<CutTable path={}>'.format(self.path)
     
     def __getitem__(self, obj):
-        info = dict(self.df.loc[obj])
-        info['name'] = obj
-        info['path'] = str(self.path)
+        info = self.df.reset_index()[self.df.index==obj].to_dict('records')[0]
         data = self.cut_img(obj)
         return data, info
     
@@ -241,7 +285,6 @@ class CutTable(object):
         b = self.data['b'][y_pix_min:y_pix_max, x_pix_min:x_pix_max]
         rgb = numpy.stack([r, g, b], 2)
         rgb = self._padding_obj(rgb, x_pix_min, y_pix_min)
-        rgb = numpy.flipud(rgb)
         rgb = numpy.expand_dims(rgb, axis=0)
         return rgb
     
