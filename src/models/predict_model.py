@@ -7,8 +7,8 @@ from ..utils.processing import *
 def calc_yx_num(cut_shape, slide_pix, map_shape):
     y_num = (int(map_shape[0])-cut_shape[0])//slide_pix[0] + 1
     x_num = (int(map_shape[1])-cut_shape[1])//slide_pix[1] + 1
-#     y_num = (map_shape[0]-cut_shape[0])//slide_pix[0] + 1
-#     x_num = (map_shape[1]-cut_shape[1])//slide_pix[1] + 1
+#     y_num = round((map_shape[0]-cut_shape[0])/slide_pix[0]) + 1
+#     x_num = round((map_shape[1])-cut_shape[1]/slide_pix[1]) + 1
     return y_num, x_num
 
 def get_indices(d_idx, y_num, x_num):
@@ -161,7 +161,58 @@ def calc_prob3(model, data, cut_shape, sld_fac):
     
     return info, prob
 
+def calc_prob4(model, data, cut_shape, sld_fac):
+    '''
+    model: keras model object
+    data: arr that is shape must be (y, x, color) or (y, x)
+    cut_shape: tuple or list
+    '''
+    input_shape = model.input_shape[1:3]
+    if data.ndim == 2: data = data[:,:,None]
+    else: pass
+    
+    if input_shape[0]*input_shape[1]>cut_shape[0]*cut_shape[1]:
+        y_size = input_shape[0]
+        x_size = input_shape[1]
+        pass
+    else:
+        y_size = cut_shape[0]
+        x_size = cut_shape[1]
+        pass
 
+    slide_pix = (int(round(cut_shape[0]/sld_fac)), int(round(cut_shape[1]/sld_fac)))
+    map_shape = data.shape[:2]
+    ch_num = data.shape[2]
+    dtype = data.dtype.name
+
+    yx_num = calc_yx_num(cut_shape, slide_pix, map_shape)
+    st_idx = get_indices(slide_pix, *yx_num)
+    resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 0.2)
+    resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
+    
+    inf_num = 2048
+    prob = []
+    arr = []
+    for i in tqdm.tqdm(range(resize_loop)):
+        _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
+        d = clip_data_st(data, _st_idx, cut_shape)
+        d = tensorflow.convert_to_tensor(d)
+        d = resize(d, input_shape)
+        d = standardize(d)
+        prob += inference(model, d, inf_num)
+        arr.append(d.numpy())
+        pass
+    
+    info = {
+        'y_num': yx_num[0], 'x_num': yx_num[1],
+        'y_cut': cut_shape[0], 'x_cut': cut_shape[1],
+        'y_sld': slide_pix[0], 'x_sld': slide_pix[1],
+        'y_org': data.shape[0], 'x_org': data.shape[1],
+    }
+    prob = numpy.array(prob)
+    arr = numpy.concatenate(arr, axis=0)
+    
+    return info, prob, arr
 
 
 # def calc_prob(model, data, cut_shape):

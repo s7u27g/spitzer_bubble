@@ -4,12 +4,13 @@ import numpy
 import pandas
 import PIL.Image
 import astropy.io.fits
+import astropy.wcs
 import astroquery.vizier
 import tensorflow
 from . import get_catalog
 
-def get_spitzer_df(path, fac, b=[-0.8, 0.8], R=[0.1, 10], seed=None, catalog='churchwell'):
-    return SpitzerDf(path, fac, b, R, seed, catalog)
+def get_spitzer_df(path, fac, b=[-0.8, 0.8], R=[0.1, 10], seed=None, catalog='churchwell', gal='mw'):
+    return SpitzerDf(path, fac, b, R, seed, catalog, gal)
 
 
 class SpitzerDf(object):
@@ -17,7 +18,7 @@ class SpitzerDf(object):
     files = None
     df = None
     
-    def __init__(self, path, fac, b, R, seed, catalog):
+    def __init__(self, path, fac, b, R, seed, catalog, gal):
         '''
         path: str or pathlib.Path
         fac: int or float
@@ -36,24 +37,44 @@ class SpitzerDf(object):
             
             if catalog == 'churchwell':
                 self.df = get_catalog.churchwell_bubble()
+                self.df = self.df.set_index('name')
                 pass
         
             elif catalog == 'mwp':
                 self.df = get_catalog.mwp_bubble()
+                self.df = self.df.set_index('name')
                 pass
             
+            elif catalog == 'wise':
+                self.df = get_catalog.wise_hii()
+                self.df = self.df.set_index('name')
+                
             else:
                 print('no catalog')
                 pass
         
         else:
             self.df = catalog
+            self.df = self.df.set_index('name')
             pass
         
-#         self._add_random_df(fac, b, R, seed)
-        self._add_random_df2(fac, b, R, seed)
+        if fac != 0:
+#             self._add_random_df(fac, b, R, seed)
+            self._add_random_df2(fac, b, R, seed)
+            pass
+        
         self.df_org = self.df.copy()
-        self._get_dir()
+        
+        if gal == 'mw':
+            self._get_dir()
+            pass
+        
+        if gal == 'lmc':
+            file = list(self.path.glob('*'))[0]
+            file = str(file).split('/')[-1]
+            self.df.loc[:, 'directory'] = file
+            pass
+        
         pass
     
     def _add_random_df(self, fac, b, R, seed):
@@ -262,8 +283,26 @@ class CutTable(object):
         b_max = series['b'] + margin*series['Rout']/60
         x_pix_min, y_pix_min = self.w.all_world2pix(l_max, b_min, 0)
         x_pix_max, y_pix_max = self.w.all_world2pix(l_min, b_max, 0)
+        
+        ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
+        if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
+        if len(y_pix_min.shape) != 0: y_pix_min = y_pix_min[0]
+        if len(x_pix_max.shape) != 0: x_pix_max = x_pix_max[0]
+        if len(y_pix_max.shape) != 0: y_pix_max = y_pix_max[0]
+#         print(x_pix_min.shape)
+#         print(y_pix_min.shape)
+#         print(x_pix_max.shape)
+#         print(y_pix_max.shape)
+        
         R_pix = int(((x_pix_max - x_pix_min)/2 + (y_pix_max - y_pix_min)/2)/2)
         x_pix, y_pix = self.w.all_world2pix(series['l'], series['b'], 0)
+        
+        ### 以下4行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
+        if len(x_pix.shape) != 0: x_pix = x_pix[0]
+        if len(y_pix.shape) != 0: y_pix = y_pix[0]
+#         print(x_pix.shape)
+#         print(y_pix.shape)
+        
         x_pix_min = max(0, int(numpy.round(x_pix)) - R_pix)
         x_pix_max = max(0, int(numpy.round(x_pix)) + R_pix)
         y_pix_min = max(0, int(numpy.round(y_pix)) - R_pix)

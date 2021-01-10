@@ -1,6 +1,8 @@
 import json
 import shutil
 import zipfile
+import pickle
+import numpy as np
 
 def make_zipfile(directory):
     shutil.make_archive(directory, 'zip', root_dir=directory)
@@ -24,14 +26,27 @@ def save_json(file, dictlist):
         pass
     return
 
+def open_pickle(file):
+    with open(file, 'rb') as f:
+        infos = pickle.load(f)
+        pass
+    return infos
+
+def save_pickle(file, obj):
+    with open(file, 'wb') as f:
+        pickle.dump(obj, f)
+        pass
+    return
 
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, numpy.integer):
+        if isinstance(obj, np.integer):
             return int(obj)
-        elif isinstance(obj, numpy.floating):
+        elif isinstance(obj, np.floating):
             return float(obj)
+#         elif isinstance(obj, np.array):
+#             return obj.tolist()
         else:
             #return super(MyEncoder, self).default(obj)
             return None
