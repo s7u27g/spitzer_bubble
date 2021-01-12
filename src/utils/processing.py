@@ -35,11 +35,11 @@ def smoothing(arr, shape):
             pass
         arr_ = np.concatenate(arr_, axis=3)
         pass
-    
+
     else:
         arr_ = arr
         pass
-    
+
     return arr_
 
 def resize(tensor, size, method='bilinear'):
@@ -48,7 +48,7 @@ def resize(tensor, size, method='bilinear'):
     size: The type must be list or tuple
     '''
     tensor = tf.image.resize(
-        images=tensor, 
+        images=tensor,
         size=size,
         method=method,
     )

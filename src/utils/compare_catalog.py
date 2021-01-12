@@ -9,7 +9,7 @@ def find_pos_candidate(se, df, pos_th):
     mask = distance<R_df*(pos_th)
     if np.nansum(mask)==0: return []
     else: return list(df[mask].index)
-    
+
 def find_size_candidate(se, df, size_th):
     R_df, R_se = df.loc[:,'Rout'], se.loc['Rout']
     R_fac = R_df.copy()
@@ -19,7 +19,7 @@ def find_size_candidate(se, df, size_th):
     mask = R_fac>size_th
     if np.nansum(mask)==0: return []
     else: return list(df[mask].index)
-    
+
 def select_match_obj(se, df):
     R_df, R_se = df.loc[:,'Rout'], se.loc['Rout']
     R_fac = R_df.copy()
@@ -102,5 +102,5 @@ def find_match_obj(df1, df2, pos_th, size_th):
     match_objs = [{'name': v, 'match_obj': k} for k, v in match_objs.items()]
     df_ = pd.DataFrame(match_objs).set_index('name')
     df1_new = pd.concat([df1, df_], axis=1, sort=True)
-    
+
     return df1_new

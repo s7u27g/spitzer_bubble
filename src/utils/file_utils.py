@@ -9,8 +9,8 @@ def make_zipfile(directory):
     return
 
 def unzip_zipfile(file):
-    with zipfile.ZipFile(file_name+'.zip') as zf: 
-        zf.extractall(file_name) 
+    with zipfile.ZipFile(file_name+'.zip') as zf:
+        zf.extractall(file_name)
         pass
     return
 
@@ -37,6 +37,9 @@ def save_pickle(file, obj):
         pickle.dump(obj, f)
         pass
     return
+
+def json2csv(file):
+    pass
 
 
 class MyEncoder(json.JSONEncoder):

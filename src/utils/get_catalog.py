@@ -63,7 +63,7 @@ def mwp_bubble():
     mwp_large.rename(columns={'GLON': 'l'}, inplace=True)
     mwp_large.rename(columns={'GLAT': 'b'}, inplace=True)
     mwp_large.rename(columns={'Reff': 'Rout'}, inplace=True)
-    
+
     mwp_small = mwp_small.set_index('name')
     mwp_large = mwp_large.set_index('name')
     bub = pd.concat([mwp_small, mwp_large], axis=0, sort=False)
@@ -95,5 +95,5 @@ def hou_hii():
     df = viz.query_constraints(catalog='J/A+A/569/A125/tablea1')[0].to_pandas()
     df.rename(columns={'GLON': 'l'}, inplace=True)
     df.rename(columns={'GLAT': 'b'}, inplace=True)
-    
+
     return df

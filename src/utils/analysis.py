@@ -21,7 +21,7 @@ def make_prob_map(result_path, prob_info):
     pad_xl = (prob_info['x_org']-prob.shape[1])//2 \
            + (prob_info['x_org']-prob.shape[1])%2 + x_err
     prob_map = numpy.pad(prob, [(pad_yu, pad_yl), (pad_xu, pad_xl)], 'constant')
-    
+
     return prob_map
 
 def make_prob_map2(result_path, prob_info, compression=1):
@@ -42,15 +42,15 @@ def make_prob_map2(result_path, prob_info, compression=1):
            + (prob_info['x_org']-prob.shape[1])%2 + x_err
     prob_map = numpy.pad(prob, [(pad_yu, pad_yl), (pad_xu, pad_xl)], 'constant')
     prob_map = smoothing(prob_map[None,:,:,None], (resize_pix[0], resize_pix[1]))
-    
+
     if compression==1:
         prob_map = prob_map[0,:,:,0]
         pass
-    
+
     else:
         prob_map = resize(prob_map, (resize_pix[0], resize_pix[1]))[0,:,:,0]
         pass
-    
+
     return prob_map
 
 def make_prob_map3(result_path, prob_info, prob_th=0., pix_th=1, compression=1):
@@ -72,15 +72,15 @@ def make_prob_map3(result_path, prob_info, prob_th=0., pix_th=1, compression=1):
            + (prob_info['x_org']-prob.shape[1])%2 + x_err
     prob_map = numpy.pad(prob, [(pad_yu, pad_yl), (pad_xu, pad_xl)], 'constant')
     prob_map = smoothing(prob_map[None,:,:,None], (resize_pix[0], resize_pix[1]))
-    
+
     if compression==1:
         prob_map = prob_map[0,:,:,0]
         pass
-    
+
     else:
         prob_map = resize(prob_map, (resize_pix[0], resize_pix[1]))[0,:,:,0]
         pass
-    
+
     return prob_map
 
 

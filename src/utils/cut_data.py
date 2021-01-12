@@ -17,7 +17,7 @@ class SpitzerDf(object):
     path = None
     files = None
     df = None
-    
+
     def __init__(self, path, fac, b, R, seed, catalog, gal):
         '''
         path: str or pathlib.Path
@@ -29,54 +29,54 @@ class SpitzerDf(object):
         if not isinstance(path, pathlib.Path):
             path = pathlib.Path(path).expanduser()
             pass
-        
+
         self.path = path
         self.files = [i.name for i in list(self.path.glob('*'))]
-        
+
         if isinstance(catalog, str):
-            
+
             if catalog == 'churchwell':
                 self.df = get_catalog.churchwell_bubble()
                 self.df = self.df.set_index('name')
                 pass
-        
+
             elif catalog == 'mwp':
                 self.df = get_catalog.mwp_bubble()
                 self.df = self.df.set_index('name')
                 pass
-            
+
             elif catalog == 'wise':
                 self.df = get_catalog.wise_hii()
                 self.df = self.df.set_index('name')
-                
+
             else:
                 print('no catalog')
                 pass
-        
+
         else:
             self.df = catalog
             self.df = self.df.set_index('name')
             pass
-        
+
         if fac != 0:
 #             self._add_random_df(fac, b, R, seed)
             self._add_random_df2(fac, b, R, seed)
             pass
-        
+
         self.df_org = self.df.copy()
-        
+
         if gal == 'mw':
             self._get_dir()
             pass
-        
+
         if gal == 'lmc':
             file = list(self.path.glob('*'))[0]
             file = str(file).split('/')[-1]
             self.df.loc[:, 'directory'] = file
             pass
-        
+
         pass
-    
+
     def _add_random_df(self, fac, b, R, seed):
         random.seed(seed)
         numpy.random.seed(seed)
@@ -84,7 +84,7 @@ class SpitzerDf(object):
         l_bub = self.df.loc[:, 'l'].tolist()
         b_bub = self.df.loc[:, 'b'].tolist()
         R_bub = self.df.loc[:, 'Rout'].tolist()
-        # Generate coordinates and size randomly within specified range    
+        # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         while len(glon_li) < len(self.df)*fac:
             l_range = 2
@@ -113,7 +113,7 @@ class SpitzerDf(object):
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
         self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
         return
-    
+
     def _add_random_df2(self, fac, b, R, seed):
         random.seed(seed)
         numpy.random.seed(seed)
@@ -122,11 +122,11 @@ class SpitzerDf(object):
         l_bub = self.df.loc[:, 'l'].tolist()
         b_bub = self.df.loc[:, 'b'].tolist()
         R_bub = self.df.loc[:, 'Rout'].tolist()
-        
+
         hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
         num, y_ = hist[0]*fac, hist[1]
         diff_ = y_[1:]-y_[:-1]
-        
+
         R_nbub = []
         for i in range(len(num)):
             R_nbub_ = numpy.array(
@@ -134,10 +134,10 @@ class SpitzerDf(object):
             )
             R_nbub.append(R_nbub_)
             pass
-        
+
         R_nbub = numpy.concatenate(R_nbub)
-        
-        # Generate coordinates and size randomly within specified range    
+
+        # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         for R_nbub_ in R_nbub:
             l_range = 2
@@ -160,7 +160,7 @@ class SpitzerDf(object):
                     i_n += 1
                     flag = False
                     pass
-                
+
         nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
         nbub = nbub.set_index('name')
         # add columns for label
@@ -169,7 +169,7 @@ class SpitzerDf(object):
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
         self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
         return
-    
+
     def _get_dir(self):
         files = self.path.glob('*')
         over_358p5 = self.df.loc[:, 'l']>358.5
@@ -193,45 +193,45 @@ class SpitzerDf(object):
         # drop NaN file line
         self.df = self.df.dropna(subset=['directory'])
         return
-    
+
     def get_cut_table(self, dir_, margin=3):
         df = self.df.loc[self.df.loc[:, 'directory']==dir_]
         return CutTable(self.path/dir_, df, margin)
-    
+
     def limit_l(self, l_min, l_max):
         mask_min = self.df.loc[:, 'l']>l_min
         mask_max = self.df.loc[:, 'l']<l_max
         self.df = self.df.loc[mask_min&mask_max]
         pass
-    
+
     def limit_b(self, b_min, b_max):
         mask_min = self.df.loc[:, 'b']>b_min
         mask_max = self.df.loc[:, 'b']<b_max
         self.df = self.df.loc[mask_min&mask_max]
         pass
-    
+
     def limit_R(self, R_min, R_max):
         mask_min = self.df.loc[:, 'Rout']>R_min
         mask_max = self.df.loc[:, 'Rout']<R_max
         self.df = self.df.loc[mask_min&mask_max]
         return
-    
+
     def drop_label(self, label):
         self.df = self.df[self.df.loc[:,'label']!=label]
         return
-    
+
     def drop_obj(self, objs):
         self.df = self.df.drop(objs, axis=0)
         return
-    
+
     def select_obj(self, objs):
         self.df = self.df.loc[objs]
         return
-    
+
     def reset_df(self):
         self.df = self.df_org
         return
-    
+
     def get_dir(self):
         dir_ = self.df.loc[:, 'directory'].unique().tolist()
         return sorted(dir_)
@@ -242,7 +242,7 @@ class CutTable(object):
     df = None
     header = None
     data = None
-    
+
     def __init__(self, path, df, margin):
         self.path = path
         self.df = df
@@ -266,24 +266,24 @@ class CutTable(object):
         self.w = astropy.wcs.WCS(self.header['g'])
         [self.calc_pix(i, margin) for i in self.get_obj()]
         pass
-    
+
     def __repr__(self):
         return '<CutTable path={}>'.format(self.path)
-    
+
     def __getitem__(self, obj):
         info = self.df.reset_index()[self.df.index==obj].to_dict('records')[0]
         data = self.cut_img(obj)
         return data, info
-    
+
     def calc_pix(self, obj, margin):
-        series = self.df.loc[obj]        
+        series = self.df.loc[obj]
         l_min = series['l'] - margin*series['Rout']/60
         b_min = series['b'] - margin*series['Rout']/60
         l_max = series['l'] + margin*series['Rout']/60
         b_max = series['b'] + margin*series['Rout']/60
         x_pix_min, y_pix_min = self.w.all_world2pix(l_max, b_min, 0)
         x_pix_max, y_pix_max = self.w.all_world2pix(l_min, b_max, 0)
-        
+
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
         if len(y_pix_min.shape) != 0: y_pix_min = y_pix_min[0]
@@ -293,16 +293,16 @@ class CutTable(object):
 #         print(y_pix_min.shape)
 #         print(x_pix_max.shape)
 #         print(y_pix_max.shape)
-        
+
         R_pix = int(((x_pix_max - x_pix_min)/2 + (y_pix_max - y_pix_min)/2)/2)
         x_pix, y_pix = self.w.all_world2pix(series['l'], series['b'], 0)
-        
+
         ### 以下4行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix.shape) != 0: x_pix = x_pix[0]
         if len(y_pix.shape) != 0: y_pix = y_pix[0]
 #         print(x_pix.shape)
 #         print(y_pix.shape)
-        
+
         x_pix_min = max(0, int(numpy.round(x_pix)) - R_pix)
         x_pix_max = max(0, int(numpy.round(x_pix)) + R_pix)
         y_pix_min = max(0, int(numpy.round(y_pix)) - R_pix)
@@ -313,7 +313,7 @@ class CutTable(object):
         self.df.loc[obj, 'y_pix_min'] = y_pix_min
         self.df.loc[obj, 'y_pix_max'] = y_pix_max
         return
-    
+
     def cut_img(self, obj):
         x_pix_min = self.df.loc[obj, 'x_pix_min']
         x_pix_max = self.df.loc[obj, 'x_pix_max']
@@ -326,23 +326,22 @@ class CutTable(object):
         rgb = self._padding_obj(rgb, x_pix_min, y_pix_min)
         rgb = numpy.expand_dims(rgb, axis=0)
         return rgb
-    
+
     def _padding_obj(self, data, x_pix_min, y_pix_min):
         pad = data.shape[0] - data.shape[1]
         if pad > 0 and x_pix_min == 0:
             data = numpy.pad(data, [(0, 0),(pad, 0), (0, 0)])
-            pass    
+            pass
         if pad > 0 and x_pix_min != 0:
             data = numpy.pad(data, [(0, 0),(0, pad), (0, 0)])
             pass
         if pad < 0 and y_pix_min == 0:
             data = numpy.pad(data, [(abs(pad), 0),(0, 0), (0, 0)])
-            pass    
+            pass
         if pad < 0 and y_pix_min != 0:
             data = numpy.pad(data, [(0, abs(pad)),(0, 0), (0, 0)])
-            pass    
+            pass
         return data
-    
+
     def get_obj(self):
         return self.df.index.to_list()
-    

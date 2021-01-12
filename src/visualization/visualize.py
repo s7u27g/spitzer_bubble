@@ -22,7 +22,7 @@ def data_view(col, imgs, infos=None):
             draw.text((3,3),infos[i]['name'])
         quo, rem = i//col, i%col
         dst.paste(img, (arr.shape[0]*rem, arr.shape[1]*quo))
-        
+
     return dst
 
 def data_view2(col, imgs, infos=None):
@@ -42,13 +42,13 @@ def data_view2(col, imgs, infos=None):
             draw.text((3,3),infos[i]['name'])
         quo, rem = i//col, i%col
         dst.paste(img, (arr.shape[0]*rem, arr.shape[1]*quo))
-        
+
     return ImageOps.flip(dst)
 
 def _draw_circle(ax, info, linewitdh, edgecolor):
     ax.add_patch(
         matplotlib.patches.Circle(
-            [info['l'], info['b']], 
+            [info['l'], info['b']],
             radius=(info['Rout']*arcmin).to(deg).value,
             edgecolor = edgecolor,
             linewidth = linewitdh,

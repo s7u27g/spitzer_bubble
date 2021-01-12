@@ -16,7 +16,7 @@ def get_cnn():
     img_rows = 50
     img_cols = 50
     input_shape = (img_rows, img_cols, num_classes)
-    
+
     model = Sequential()
     model.add(Conv2D(32, kernel_size=(5, 5),
                      activation='relu',
@@ -36,13 +36,13 @@ def get_cnn():
     model.add(Dense(128, activation='relu', kernel_regularizer=keras.regularizers.l2(0.1)))
     model.add(Dropout(0.5))
     model.add(Dense(num_classes, activation='softmax' , kernel_regularizer=keras.regularizers.l2(0.1)))
-    
+
     model.compile(
         loss='categorical_crossentropy',
         optimizer=keras.optimizers.Adam(),
         metrics=['acc'],
     )
-    
+
     return model
 
 def initialize_learning(ds_path):
@@ -50,21 +50,21 @@ def initialize_learning(ds_path):
 
 
 class Learning(object):
-    
+
     def __init__(self, ds_path):
         self.batch_size = 2048
         self.epochs = 500
         self.model = get_cnn()
         self.open_dataset(ds_path)
         pass
-    
+
     def open_dataset(self, ds_path):
         self.x_train = np.load(ds_path/'x_train.npy')[:,:,:,0:2]
         self.x_test = np.load(ds_path/'x_test.npy')[:,:,:,0:2]
         self.y_train = np.load(ds_path/'y_train.npy')
         self.y_test = np.load(ds_path/'y_test.npy')
         pass
-    
+
     def fit_model(self):
         es_cb = keras.callbacks.EarlyStopping(
             monitor='val_loss',
@@ -73,7 +73,7 @@ class Learning(object):
             verbose=1,
             mode='auto'
         )
-        
+
         rd_cb = keras.callbacks.ReduceLROnPlateau(
             monitor='val_loss',
             factor=0.1,
@@ -82,7 +82,7 @@ class Learning(object):
             min_lr=0.001,
             mode='auto'
         )
-        
+
         cbks = [es_cb, rd_cb]
         self.history = self.model.fit(
             x=self.x_train,
@@ -94,11 +94,11 @@ class Learning(object):
             validation_data=(self.x_test, self.y_test)
         )
         pass
-    
+
     def save_model(self, save_path):
         self.model.save(save_path)
         pass
-    
+
     def save_history(self, save_path):
 #         learn_history = {
 #             'acc': np.array(self.history.history['acc']),
@@ -109,4 +109,3 @@ class Learning(object):
         learn_history = pd.DataFrame(self.history.history).to_dict('records')
         file_utils.save_json(save_path, learn_history)
         pass
-

@@ -67,7 +67,7 @@ def test(validation_area):
         if data_.max()==data_.max():
             pass
 
-        else: 
+        else:
             bad_nring.append(nring_infos[i]['name'])
             pass
         pass
@@ -126,7 +126,7 @@ def test(validation_area):
 
     y_train = np_utils.to_categorical(y_train)
     y_test = np_utils.to_categorical(y_test)
-    
+
     train_df = pandas.concat([train_ring_df, train_nring_df]).reset_index()
     train_df = train_df.where(train_df==train_df, None)
     test_df = pandas.concat([test_ring_df, test_nring_df]).reset_index()
@@ -143,15 +143,15 @@ def test(validation_area):
     numpy.save(save_path/'y_train.npy', y_train)
     numpy.save(save_path/'x_test.npy', x_test)
     numpy.save(save_path/'y_test.npy', y_test)
-    
+
     train_df = pandas.concat([train_ring_df, train_nring_df]).reset_index()
     train_df = train_df.where(train_df==train_df, None)
     test_df = pandas.concat([test_ring_df, test_nring_df]).reset_index()
     test_df = test_df.where(test_df==test_df, None)
     train_infos = train_df.reset_index().to_dict('records')
     test_infos = test_df.reset_index().to_dict('records')
-    
+
     file_utils.save_json(save_path/'train.json', train_infos)
     file_utils.save_json(save_path/'test.json', test_infos)
-    
+
     pass
