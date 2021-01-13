@@ -58,7 +58,7 @@ def inference(model, data, inf_num):
         p = model(d).numpy()[:, 1].tolist()
         prob += p
         pass
-    return prob.astype(numpy.float32)
+    return prob
 
 
 def calc_prob3(model, data, cut_shape, sld_fac):
