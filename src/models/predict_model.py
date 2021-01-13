@@ -58,7 +58,7 @@ def inference(model, data, inf_num):
         p = model(d).numpy()[:, 1].tolist()
         prob += p
         pass
-    return prob
+    return prob.astype('float32')
 
 
 def calc_prob3(model, data, cut_shape, sld_fac):
@@ -160,7 +160,6 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
         'y_sld': slide_pix[0], 'x_sld': slide_pix[1],
         'y_org': data.shape[0], 'x_org': data.shape[1],
     }
-    probs = numpy.array(probs)
 
     return info, probs
 
