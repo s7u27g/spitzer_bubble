@@ -160,7 +160,7 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
         'y_sld': slide_pix[0], 'x_sld': slide_pix[1],
         'y_org': data.shape[0], 'x_org': data.shape[1],
     }
-    prob = numpy.array(prob)
+    probs = numpy.array(probs)
 
     return info, probs
 
