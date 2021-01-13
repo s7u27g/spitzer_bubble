@@ -117,7 +117,7 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
     data: arr that is shape must be (y, x, color) or (y, x)
     cut_shape: tuple or list
     '''
-    input_shape = model.input_shape[1:3]
+    input_shape = models[0].input_shape[1:3]
     if data.ndim == 2: data = data[:,:,None]
     else: pass
 
