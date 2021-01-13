@@ -141,7 +141,7 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
 
     inf_num = 2048
-    probs = [[] for i in range(len(models))]
+    prob = [[] for i in range(len(models))]
     for i in tqdm.tqdm(range(resize_loop)):
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
         d = clip_data_st(data, _st_idx, cut_shape)
@@ -149,8 +149,8 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
         d = resize(d, input_shape)
         d = standardize(d)
 
-        for prob, model in zip(probs, models):
-            prob += inference(model, d, inf_num)
+        for prob_, model in zip(prob, models):
+            prob_ += inference(model, d, inf_num)
             pass
         pass
 
@@ -161,7 +161,7 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
         'y_org': data.shape[0], 'x_org': data.shape[1],
     }
 
-    return info, probs
+    return info, prob
 
 # def calc_prob(model, data, cut_shape):
 #     '''
