@@ -141,7 +141,7 @@ def calc_prob_cross(models, data, cut_shape, sld_fac):
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
 
     inf_num = 2048
-    probs = [[] for i in range(len(models)]
+    probs = [[] for i in range(len(models))]
     for i in tqdm.tqdm(range(resize_loop)):
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
         d = clip_data_st(data, _st_idx, cut_shape)
