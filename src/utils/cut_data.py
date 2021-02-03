@@ -265,7 +265,20 @@ class CutTable(object):
         }
         self.w = astropy.wcs.WCS(self.header['g'])
         [self.calc_pix(i, margin) for i in self.get_obj()]
-        pass
+
+        if ('l' in self.df.columns.to_list()) & \
+           ('b' in self.df.columns.to_list()):
+            self.coord = ['l', 'b']
+            pass
+
+        elif ('ra' in self.df.columns.to_list()) & \
+             ('dec' in self.df.columns.to_list()):
+            self.coord = ['ra', 'dec']
+            pass
+
+        else:
+            print('bad coordinates')
+            pass
 
     def __repr__(self):
         return '<CutTable path={}>'.format(self.path)
@@ -277,12 +290,12 @@ class CutTable(object):
 
     def calc_pix(self, obj, margin):
         series = self.df.loc[obj]
-        l_min = series['l'] - margin*series['Rout']/60
-        b_min = series['b'] - margin*series['Rout']/60
-        l_max = series['l'] + margin*series['Rout']/60
-        b_max = series['b'] + margin*series['Rout']/60
-        x_pix_min, y_pix_min = self.w.all_world2pix(l_max, b_min, 0)
-        x_pix_max, y_pix_max = self.w.all_world2pix(l_min, b_max, 0)
+        coord0_min = series[self.coord[0]] - margin*series['Rout']/60
+        coord1_min = series[self.coord[1]] - margin*series['Rout']/60
+        coord0_max = series[self.coord[0]] + margin*series['Rout']/60
+        coord1_max = series[self.coord[1]] + margin*series['Rout']/60
+        x_pix_min, y_pix_min = self.w.all_world2pix(coord0_max, coord1_min, 0)
+        x_pix_max, y_pix_max = self.w.all_world2pix(coord0_min, coord1_max, 0)
 
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
@@ -295,7 +308,7 @@ class CutTable(object):
 #         print(y_pix_max.shape)
 
         R_pix = int(((x_pix_max - x_pix_min)/2 + (y_pix_max - y_pix_min)/2)/2)
-        x_pix, y_pix = self.w.all_world2pix(series['l'], series['b'], 0)
+        x_pix, y_pix = self.w.all_world2pix(series[self.coord[0]], series[self.coord[1]], 0)
 
         ### 以下4行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix.shape) != 0: x_pix = x_pix[0]
