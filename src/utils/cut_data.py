@@ -251,20 +251,6 @@ class CutTable(object):
         self.df = self.df.assign(x_pix_max=0)
         self.df = self.df.assign(y_pix_min=0)
         self.df = self.df.assign(y_pix_max=0)
-        rgb = ['r.fits', 'g.fits', 'b.fits']
-        hdus = [astropy.io.fits.open(path/i)[0] for i in rgb]
-        self.header = {
-            'r': hdus[0].header,
-            'g': hdus[1].header,
-            'b': hdus[2].header,
-        }
-        self.data = {
-            'r': hdus[0].data,
-            'g': hdus[1].data,
-            'b': hdus[2].data,
-        }
-        self.w = astropy.wcs.WCS(self.header['g'])
-        [self.calc_pix(i, margin) for i in self.get_obj()]
 
         if ('l' in self.df.columns.to_list()) & \
            ('b' in self.df.columns.to_list()):
@@ -279,6 +265,22 @@ class CutTable(object):
         else:
             print('bad coordinates')
             pass
+
+        rgb = ['r.fits', 'g.fits', 'b.fits']
+        hdus = [astropy.io.fits.open(path/i)[0] for i in rgb]
+        self.header = {
+            'r': hdus[0].header,
+            'g': hdus[1].header,
+            'b': hdus[2].header,
+        }
+        self.data = {
+            'r': hdus[0].data,
+            'g': hdus[1].data,
+            'b': hdus[2].data,
+        }
+        self.w = astropy.wcs.WCS(self.header['g'])
+        [self.calc_pix(i, margin) for i in self.get_obj()]
+        pass
 
     def __repr__(self):
         return '<CutTable path={}>'.format(self.path)
