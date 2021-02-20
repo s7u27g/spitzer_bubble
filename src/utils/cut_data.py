@@ -119,6 +119,12 @@ class SpitzerDf(object):
         numpy.random.seed(seed)
         l = sorted([int(i[8:11]) for i in self.files])
         l.pop(l.index(294))
+
+        over_358p5 = self.df.loc[:, 'l']>358.5
+        for i in self.df[over_358p5].loc[:, 'l'].index:
+            self.df.loc[i, 'l'] -= 360
+            pass
+
         l_bub = self.df.loc[:, 'l'].tolist()
         b_bub = self.df.loc[:, 'b'].tolist()
         R_bub = self.df.loc[:, 'Rout'].tolist()
@@ -151,7 +157,8 @@ class SpitzerDf(object):
                 i_R = round(R_nbub_, 2)
                 # Select one that does not overlap with the bubble catalog
                 distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
-                _min = [(i_R/60 + j_R/60)**2 for j_R in R_bub]
+                # Allows up to 1/5 of ring size
+                _min = [(i_R/60 + (j_R/60)/5)**2 for j_R in R_bub]
                 if all([_d > _m for _d, _m in zip(distance, _min)]):
                     name.append('F{}'.format(i_n))
                     glon_li.append(i_l)
@@ -168,6 +175,12 @@ class SpitzerDf(object):
         nbub = nbub.assign(label=0)
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
         self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+
+        under_0p0 = self.df.loc[:, 'l']<0
+        for i in self.df[under_0p0].loc[:, 'l'].index:
+            self.df.loc[i, 'l'] += 360
+            pass
+
         return
 
     def _get_dir(self):
