@@ -87,7 +87,7 @@ class SpitzerDf(object):
         # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         while len(glon_li) < len(self.df)*fac:
-            l_range = 2
+            l_range = 2.5
             l_center = random.choice(l)
             l_fac = numpy.random.rand()
             b_fac = numpy.random.rand()
