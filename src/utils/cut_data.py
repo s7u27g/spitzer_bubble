@@ -146,7 +146,7 @@ class SpitzerDf(object):
         # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         for R_nbub_ in R_nbub:
-            l_range = 2
+            l_range = 2.5
             flag = True
             while flag:
                 l_center = random.choice(l)
