@@ -217,6 +217,113 @@ def calc_prob_cross2(models, data, cut_shape, sld_fac):
 
     return info, prob
 
+def calc_prob_cross3(models, data, cut_shape, sld_fac):
+    '''
+    models: list of keras model object
+    data: arr that is shape must be (y, x, color) or (y, x)
+    cut_shape: tuple or list
+    '''
+    input_shape = models[0].input_shape[1:3]
+    if data.ndim == 2: data = data[:,:,None]
+    else: pass
+
+    if input_shape[0]*input_shape[1]>cut_shape[0]*cut_shape[1]:
+        y_size = input_shape[0]
+        x_size = input_shape[1]
+        pass
+    else:
+        y_size = cut_shape[0]
+        x_size = cut_shape[1]
+        pass
+
+    slide_pix = (int(round(cut_shape[0]/sld_fac)), int(round(cut_shape[1]/sld_fac)))
+    map_shape = data.shape[:2]
+    ch_num = data.shape[2]
+    dtype = data.dtype.name
+
+    yx_num = calc_yx_num(cut_shape, slide_pix, map_shape)
+    st_idx = get_indices(slide_pix, *yx_num)
+    resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 0.2)
+    resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
+
+    inf_num = 2048
+    prob = [[] for i in range(len(models))]
+    for i in tqdm.tqdm(range(resize_loop)):
+        _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
+        d = clip_data_st(data, _st_idx, cut_shape)
+        d = tensorflow.convert_to_tensor(d)
+        d = resize(d, input_shape)
+        ### 一色毎に独立して規格化
+        d = normalize(d)
+
+        for prob_, model in zip(prob, models):
+            prob_ += inference(model, d, inf_num)
+            pass
+        pass
+
+    info = {
+        'y_num': yx_num[0], 'x_num': yx_num[1],
+        'y_cut': cut_shape[0], 'x_cut': cut_shape[1],
+        'y_sld': slide_pix[0], 'x_sld': slide_pix[1],
+        'y_org': data.shape[0], 'x_org': data.shape[1],
+    }
+
+    return info, prob
+
+def calc_prob_cross4(models, data, cut_shape, sld_fac):
+    '''
+    models: list of keras model object
+    data: arr that is shape must be (y, x, color) or (y, x)
+    cut_shape: tuple or list
+    '''
+    input_shape = models[0].input_shape[1:3]
+    if data.ndim == 2: data = data[:,:,None]
+    else: pass
+
+    if input_shape[0]*input_shape[1]>cut_shape[0]*cut_shape[1]:
+        y_size = input_shape[0]
+        x_size = input_shape[1]
+        pass
+    else:
+        y_size = cut_shape[0]
+        x_size = cut_shape[1]
+        pass
+
+    slide_pix = (int(round(cut_shape[0]/sld_fac)), int(round(cut_shape[1]/sld_fac)))
+    map_shape = data.shape[:2]
+    ch_num = data.shape[2]
+    dtype = data.dtype.name
+
+    yx_num = calc_yx_num(cut_shape, slide_pix, map_shape)
+    st_idx = get_indices(slide_pix, *yx_num)
+    resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 0.2)
+    resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
+
+    inf_num = 2048
+    prob = [[] for i in range(len(models))]
+    for i in tqdm.tqdm(range(resize_loop)):
+        _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
+        d = clip_data_st(data, _st_idx, cut_shape)
+        d = tensorflow.convert_to_tensor(d)
+        d = resize(d, input_shape)
+        ### 全色一緒に規格化
+        d = normalize_all(d)
+
+        for prob_, model in zip(prob, models):
+            prob_ += inference(model, d, inf_num)
+            pass
+        pass
+
+    info = {
+        'y_num': yx_num[0], 'x_num': yx_num[1],
+        'y_cut': cut_shape[0], 'x_cut': cut_shape[1],
+        'y_sld': slide_pix[0], 'x_sld': slide_pix[1],
+        'y_org': data.shape[0], 'x_org': data.shape[1],
+    }
+
+    return info, prob
+
+
 # def calc_prob(model, data, cut_shape):
 #     '''
 #     model: keras model object
