@@ -111,6 +111,32 @@ def standardize_all(tensor):
     tensor = tf.reshape(tensor, s)
     return tensor
 
+def normalize(tensor):
+    '''
+    tensor: The shape must be (num, y, x, color)
+    '''
+    s = tensor.shape
+    tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
+    tensor = tensor - t_min
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
+    tensor = tensor/t_max
+    tensor = tf.reshape(tensor, s)
+    return tensor
+
+def normalize_all(tensor):
+    '''
+    tensor: The shape must be (num, y, x, color)
+    '''
+    s = tensor.shape
+    tensor = tf.reshape(tensor, [s[0], s[1]*s[2]*s[3]])
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
+    tensor = tensor - t_min
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
+    tensor = tensor/t_max
+    tensor = tf.reshape(tensor, s)
+    return tensor
+
 def remove_star(tensor, kernel_size):
     '''
     tensor: The shape must be (num, y, x, color)
