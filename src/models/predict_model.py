@@ -55,7 +55,7 @@ def inference(model, data, inf_num):
     prob = []
     for i in range(inf_loop):
         d = data[i*inf_num:(i+1)*inf_num]
-        p = model(d).np()[:, 1].tolist()
+        p = model(d).numpy()[:, 1].tolist()
         prob += p
         pass
     return prob
