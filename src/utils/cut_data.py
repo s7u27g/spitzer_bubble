@@ -60,7 +60,8 @@ class SpitzerDf(object):
 
         if fac != 0:
 #             self._add_random_df(fac, b, R, seed)
-            self._add_random_df2(fac, b, R, seed)
+#             self._add_random_df2(fac, b, R, seed)
+            self._add_random_df3(fac, b, R, seed)
             pass
 
         self.df_org = self.df.copy()
@@ -159,6 +160,76 @@ class SpitzerDf(object):
                 distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
                 # Allows up to 1/5 of ring size
                 _min = [(i_R/60 + (j_R/60)/5)**2 for j_R in R_bub]
+                if all([_d > _m for _d, _m in zip(distance, _min)]):
+                    name.append('F{}'.format(i_n))
+                    glon_li.append(i_l)
+                    glat_li.append(i_b)
+                    size_li.append(i_R)
+                    i_n += 1
+                    flag = False
+                    pass
+
+        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+        nbub = nbub.set_index('name')
+        # add columns for label
+        self.df = self.df.assign(label=1)
+        nbub = nbub.assign(label=0)
+        self.df = self.df.append(nbub)[self.df.columns.tolist()]
+        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+
+        under_0p0 = self.df.loc[:, 'l']<0
+        for i in self.df[under_0p0].loc[:, 'l'].index:
+            self.df.loc[i, 'l'] += 360
+            pass
+
+        return
+
+    def _add_random_df3(self, fac, b, R, seed):
+        random.seed(seed)
+        numpy.random.seed(seed)
+        l = sorted([int(i[8:11]) for i in self.files])
+        l.pop(l.index(294))
+
+        over_358p5 = self.df.loc[:, 'l']>358.5
+        for i in self.df[over_358p5].loc[:, 'l'].index:
+            self.df.loc[i, 'l'] -= 360
+            pass
+
+        l_bub = self.df.loc[:, 'l'].tolist()
+        b_bub = self.df.loc[:, 'b'].tolist()
+        R_bub = self.df.loc[:, 'Rout'].tolist()
+
+        hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
+        num, y_ = hist[0]*fac, hist[1]
+        diff_ = y_[1:]-y_[:-1]
+
+        R_nbub = []
+        for i in range(len(num)):
+            R_nbub_ = numpy.array(
+                [numpy.random.rand()*diff_[i] + y_[i] for j in range(num[i])]
+            )
+            R_nbub.append(R_nbub_)
+            pass
+
+        R_nbub = numpy.concatenate(R_nbub)
+
+        # Generate coordinates and size randomly within specified range
+        name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
+        for R_nbub_ in R_nbub:
+            l_range = 2.5
+            flag = True
+            while flag:
+                l_center = random.choice(l)
+                l_fac = numpy.random.rand()
+                b_fac = numpy.random.rand()
+                i_l = round((l_range*l_fac) + l_center - (l_range/2), 3)
+                i_b = round((b[1] - b[0])*b_fac + b[0], 3)
+                i_R = round(R_nbub_, 2)
+                # Select one that does not overlap with the bubble catalog
+                distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
+                # Allows up to 1/5 of ring size
+                s_mask = (R_bub/R_nbub_<5)|(R_bub/R_nbub_>5)
+                _min = [(i_R/60 + (j_R/60)/5)**2 for j_R in R_bub[s_mask]]
                 if all([_d > _m for _d, _m in zip(distance, _min)]):
                     name.append('F{}'.format(i_n))
                     glon_li.append(i_l)
