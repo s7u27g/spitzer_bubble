@@ -217,6 +217,7 @@ class SpitzerDf(object):
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         for R_nbub_ in R_nbub:
             s_mask = (R_nbub_/R_bub<1/5)|(R_nbub_/R_bub>5)
+            print(s_mask.sum())
             l_range = 2.5
             flag = True
             while flag:
