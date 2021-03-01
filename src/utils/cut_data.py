@@ -218,6 +218,10 @@ class SpitzerDf(object):
         for R_nbub_ in R_nbub:
             s_mask = (R_nbub_/R_bub<1/5)|(R_nbub_/R_bub>5)
             print(s_mask.sum())
+            print(len(l_bub[s_mask]))
+            print(len(b_bub[s_mask]))
+            print(len(R_bub[s_mask]))
+            print('+++++')
             l_range = 2.5
             flag = True
             while flag:
