@@ -104,3 +104,32 @@ def find_match_obj(df1, df2, pos_th, size_th):
     df1_new = pd.concat([df1, df_], axis=1, sort=True)
 
     return df1_new
+
+
+def split_tp_fp_fn(df1, df2, pos_th, size_th, verbose=False):
+    '''
+    Check which celestial body in df2 matches df1.
+    return: dict of df
+    '''
+    df1 = df1.set_index('name')
+    df2 = df2.set_index('name')
+    df1 = compare_catalog.find_match_obj(df1, df2, pos_th, size_th)
+    tp_df1 = df1.loc[df1.loc[:,'match_obj']==df1.loc[:,'match_obj']]
+    fp_df1 = df1.loc[df1.loc[:,'match_obj']!=df1.loc[:,'match_obj']]
+    tp_df2 = df2.loc[df2.index.isin(df1.loc[:,'match_obj'].unique())]
+    fn_df2 = df2.loc[~df2.index.isin(df1.loc[:,'match_obj'].unique())]
+
+    ret = {
+        'tp_df1': tp_df1.reset_index(),
+        'fp_df1': fp_df1.reset_index(),
+        'tp_df2': tp_df2.reset_index(),
+        'fn_df2': fn_df2.reset_index(),
+    }
+
+    if verbose:
+        tp, fp, fn = len(tp_df1), len(fp_df1), len(fn_df2)
+        print(f'　網羅率: {round(tp/(tp+fn)*100, 2)} %')
+        print(f'誤検知率: {round(fp/(tp+fp)*100, 2)} %')
+        pass
+
+    return ret
