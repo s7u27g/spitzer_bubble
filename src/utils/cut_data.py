@@ -216,6 +216,7 @@ class SpitzerDf(object):
         # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         for R_nbub_ in R_nbub:
+            s_mask = (R_bub/R_nbub_<1/5)|(R_bub/R_nbub_>5)
             l_range = 2.5
             flag = True
             while flag:
@@ -226,9 +227,8 @@ class SpitzerDf(object):
                 i_b = round((b[1] - b[0])*b_fac + b[0], 3)
                 i_R = round(R_nbub_, 2)
                 # Select one that does not overlap with the bubble catalog
-                distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub, b_bub)]
+                distance = [(i_l - j_l)**2 + (i_b - j_b)**2 for j_l, j_b in zip(l_bub[s_mask], b_bub[s_mask])]
                 # Allows up to 1/5 of ring size
-                s_mask = (R_bub/R_nbub_<5)|(R_bub/R_nbub_>5)
                 _min = [(i_R/60 + (j_R/60)/5)**2 for j_R in R_bub[s_mask]]
                 if all([_d > _m for _d, _m in zip(distance, _min)]):
                     name.append('F{}'.format(i_n))
