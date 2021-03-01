@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from PIL import Image, ImageDraw, ImageOps
 import matplotlib.patches
 from astropy.units import arcmin, deg
