@@ -113,7 +113,7 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, verbose=False):
     '''
     df1 = df1.set_index('name')
     df2 = df2.set_index('name')
-    df1 = compare_catalog.find_match_obj(df1, df2, pos_th, size_th)
+    df1 = find_match_obj(df1, df2, pos_th, size_th)
     tp_df1 = df1.loc[df1.loc[:,'match_obj']==df1.loc[:,'match_obj']]
     fp_df1 = df1.loc[df1.loc[:,'match_obj']!=df1.loc[:,'match_obj']]
     tp_df2 = df2.loc[df2.index.isin(df1.loc[:,'match_obj'].unique())]
