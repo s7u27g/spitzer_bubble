@@ -216,7 +216,7 @@ class SpitzerDf(object):
         # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         for R_nbub_ in R_nbub:
-            s_mask = (R_bub/R_nbub_<1/5)|(R_bub/R_nbub_>5)
+            s_mask = (R_nbub_/R_bub<1/5)|(R_nbub_/R_bub>5)
             l_range = 2.5
             flag = True
             while flag:
