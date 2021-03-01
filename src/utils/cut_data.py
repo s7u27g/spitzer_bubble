@@ -195,9 +195,9 @@ class SpitzerDf(object):
             self.df.loc[i, 'l'] -= 360
             pass
 
-        l_bub = self.df.loc[:, 'l'].tolist()
-        b_bub = self.df.loc[:, 'b'].tolist()
-        R_bub = self.df.loc[:, 'Rout'].tolist()
+        l_bub = numpy.array(self.df.loc[:, 'l'].tolist())
+        b_bub = numpy.array(self.df.loc[:, 'b'].tolist())
+        R_bub = numpy.array(self.df.loc[:, 'Rout'].tolist())
 
         hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
         num, y_ = hist[0]*fac, hist[1]
