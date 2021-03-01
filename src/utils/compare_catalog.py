@@ -111,8 +111,8 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, verbose=False):
     Check which celestial body in df2 matches df1.
     return: dict of df
     '''
-    df1 = df1.set_index('name')
-    df2 = df2.set_index('name')
+    df1 = df1.reset_index().set_index('name').rename(columns={'index': 'org_idx'})
+    df2 = df2.reset_index().set_index('name').rename(columns={'index': 'org_idx'})
     df1 = find_match_obj(df1, df2, pos_th, size_th)
     tp_df1 = df1.loc[df1.loc[:,'match_obj']==df1.loc[:,'match_obj']]
     fp_df1 = df1.loc[df1.loc[:,'match_obj']!=df1.loc[:,'match_obj']]
