@@ -120,15 +120,15 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, verbose=False):
     fn_df2 = df2.loc[~df2.index.isin(df1.loc[:,'match_obj'].unique())]
 
     ret = {
-        'tp_df1': tp_df1.reset_index(),
-        'fp_df1': fp_df1.reset_index(),
-        'tp_df2': tp_df2.reset_index(),
-        'fn_df2': fn_df2.reset_index(),
+        'tp_df1': tp_df1.reset_index().rename(columns={'index': 'name'}),
+        'fp_df1': fp_df1.reset_index().rename(columns={'index': 'name'}),
+        'tp_df2': tp_df2.reset_index().rename(columns={'index': 'name'}),
+        'fn_df2': fn_df2.reset_index().rename(columns={'index': 'name'}),
     }
 
     if verbose:
         tp, fp, fn = len(tp_df1), len(fp_df1), len(fn_df2)
-        print(f'　網羅率: {round(tp/(tp+fn)*100, 2)} %')
+        print(f'  網羅率: {round(tp/(tp+fn)*100, 2)} %')
         print(f'誤検知率: {round(fp/(tp+fp)*100, 2)} %')
         pass
 
