@@ -91,7 +91,7 @@ def calc_prob(models, data, cut_shape, sld_fac, processing_func):
     resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 0.2)
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
 
-    inf_num = 512 
+    inf_num = 2048
     prob = [[] for i in range(len(models))]
     for i in tqdm.tqdm(range(resize_loop)):
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
