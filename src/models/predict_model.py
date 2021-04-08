@@ -152,7 +152,7 @@ def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac):
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
         d = clip_data_st(data, _st_idx, cut_shape)
         d = tf.convert_to_tensor(d)
-        d = resize(d, input_shape)
+        d = resize(d, input_shape).numpy()
 
         e_ = 1.0e-8
         d[d<e_] = e_
