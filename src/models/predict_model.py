@@ -156,7 +156,7 @@ def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac):
 
         e_ = 1.0e-8
         d[d<e_] = e_
-        b = (d[:,:,:,0]/[d[:,:,:,1])[:,:,:,None]
+        b = (d[:,:,:,0]/d[:,:,:,1])[:,:,:,None]
         b *= b_fac
         b[b>255] = 255
 
