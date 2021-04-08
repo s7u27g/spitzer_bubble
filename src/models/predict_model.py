@@ -162,7 +162,7 @@ def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac):
 
         d = processing_func(d).numpy()
         d = visualize.scale255_for_normalize(d)
-        d = np.concatenate([d, b_], axis=3)
+        d = np.concatenate([d, b], axis=3)
 
         for prob_, model in zip(prob, models):
             prob_ += inference(model, d, inf_num)
