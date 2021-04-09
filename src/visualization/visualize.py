@@ -37,7 +37,7 @@ def processing_func(data, norm_func=None, shape=(50, 50)):
     data = tensor.numpy()
     return data
 
-def scale255_for_standerlize(data_cube, bias=4, factor=20):
+def scale255_for_standardize(data_cube, bias=4, factor=20):
     data_cube = (data_cube+bias)*factor
     data_cube[data_cube>255] = 255
     data_cube[data_cube<0] = 0
