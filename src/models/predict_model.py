@@ -117,7 +117,7 @@ def calc_prob(models, data, cut_shape, sld_fac, processing_func):
 
 
 
-def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac):
+def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac=1, b_max=255):
     '''
     models: list of keras model object
     data: arr that is shape must be (y, x, color) or (y, x)
@@ -152,17 +152,16 @@ def calc_prob_tmp(models, data, cut_shape, sld_fac, processing_func, b_fac):
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
         d = clip_data_st(data, _st_idx, cut_shape)
         d = tf.convert_to_tensor(d)
-        d = resize(d, input_shape).numpy()
+        d = resize(d, input_shape)
 
         e_ = 1.0e-8
-        d[d<e_] = e_
+        d = tf.where(d<e_, e_, d)
         b = (d[:,:,:,0]/d[:,:,:,1])[:,:,:,None]
         b *= b_fac
-        b[b>255] = 255
+        b = tf.where(b>b_max, b_max, b)
 
-        d = processing_func(d).numpy()
-        d = visualize.scale255_for_normalize(d)
-        d = np.concatenate([d, b], axis=3)
+        d = processing_func(d)
+        d = tf.concat([d, b], axis=3)
 
         for prob_, model in zip(prob, models):
             prob_ += inference(model, d, inf_num)
