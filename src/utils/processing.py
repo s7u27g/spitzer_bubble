@@ -111,6 +111,22 @@ def standardize_all(tensor):
     tensor = tf.reshape(tensor, s)
     return tensor
 
+def standardize_3sig(tensor):
+    '''
+    tensor: The shape must be (num, y, x, color)
+    '''
+    s = tensor.shape
+    tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
+    _max = t_mean+(3*t_std)
+    tensor = tf.where(tensor>_max, _max, tensor)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
+    tensor = (tensor-t_mean)/t_std
+    tensor = tf.reshape(tensor, s)
+    return tensor
+
 def normalize(tensor):
     '''
     tensor: The shape must be (num, y, x, color)
