@@ -40,8 +40,13 @@ class SpitzerDf(object):
                 self.df = self.df.set_index('name')
                 pass
 
-            elif catalog == 'mwp':
-                self.df = get_catalog.mwp_bubble()
+            elif catalog == 'mwp_1st':
+                self.df = get_catalog.mwp1st_bubble()
+                self.df = self.df.set_index('name')
+                pass
+
+            elif catalog == 'mwp_2nd':
+                self.df = get_catalog.mwp2nd_bubble()
                 self.df = self.df.set_index('name')
                 pass
 

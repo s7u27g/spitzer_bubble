@@ -40,7 +40,7 @@ def churchwell_bubble():
     bub = pd.concat([bub_2006, bub_2007])
     return bub.reset_index()
 
-def mwp_bubble():
+def mwp1st_bubble():
     viz = astroquery.vizier.Vizier(columns=['*'])
     viz.ROW_LIMIT = -1
     mwp_small = viz.query_constraints(catalog='J/MNRAS/424/2442/mwpsmall')[0].to_pandas()
@@ -68,6 +68,17 @@ def mwp_bubble():
     mwp_large = mwp_large.set_index('name')
     bub = pd.concat([mwp_small, mwp_large], axis=0, sort=False)
     return bub.reset_index()
+
+def mwp2nd_bubble():
+    viz = astroquery.vizier.Vizier(columns=['*'])
+    viz.ROW_LIMIT = -1
+    mwp = viz.query_constraints(catalog='J/MNRAS/488/1141/table3')[0].to_pandas()
+    mwp.rename(columns={'MWP': 'name'}, inplace=True)
+    mwp.rename(columns={'GLON': 'l'}, inplace=True)
+    mwp.rename(columns={'GLAT': 'b'}, inplace=True)
+    mwp.rename(columns={'Reff': 'Rout'}, inplace=True)
+    mwp = mwp.set_index('name')
+    return mwp.reset_index()
 
 def wise_hii():
     viz = astroquery.vizier.Vizier(columns=['*'])
