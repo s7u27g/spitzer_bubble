@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 import shutil
 import zipfile
 import pickle
@@ -22,7 +22,7 @@ def open_json(file):
 
 def save_json(file, dictlist):
     with open(file, 'w') as f:
-        json.dump(dictlist, f, cls = MyEncoder)
+        json.dump(dictlist, f, cls=MyEncoder, ignore_nan=True)
         pass
     return
 
