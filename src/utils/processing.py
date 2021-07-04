@@ -12,11 +12,11 @@ try:
 except:
     pass
 
-def select_module(module):
-    if module=='tensorflow':
-        from .processing_tensorflow import *
-    elif module=='pytorch':
-        from .processing_pytorch import *
+# def select_module(module):
+#     if module=='tensorflow':
+#         from .processing_tensorflow import *
+#     elif module=='pytorch':
+#         from .processing_pytorch import *
 
 # import numpy as np
 # import tensorflow as tf
