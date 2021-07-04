@@ -1,6 +1,22 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 
+def array2tensor(arr):
+    '''
+    arr: The shape must be NHWC
+    return: pytorch tensor (shape is NCHW)
+    '''
+    tensor = tf.convert_to_tensor(arr)
+    return tensor
+
+def tensor2array(tensor):
+    '''
+    tensor: The shape must be NCHW
+    return: pytorch tensor (shape is NHWC)
+    '''
+    arr = tensor.numpy()
+    return arr
+
 def resize(tensor, size, method='bilinear'):
     '''
     tensor: The shape must be NHWC

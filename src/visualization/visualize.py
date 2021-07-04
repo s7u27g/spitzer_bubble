@@ -1,5 +1,5 @@
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 from PIL import Image, ImageDraw, ImageOps
 import matplotlib.patches
 from astropy.units import arcmin, deg
@@ -28,13 +28,15 @@ def data_view(col, imgs, infos=None):
 def processing_func(data, norm_func=None, shape=(50, 50)):
     shape = (shape[0]*2, shape[1]*2)
     data = processing.smoothing(data, shape)
-    tensor = tf.convert_to_tensor(data)
+    tensor = processing.array2tensor(data)
+    # tensor = tf.convert_to_tensor(data)
     tensor = processing.resize(tensor, shape)
     tensor = processing.crop(tensor, 1/2)
     if norm_func is not None:
         tensor = norm_func(tensor)
         pass
-    data = tensor.numpy()
+    data = processing.tensor2array(tensor)
+    # data = tensor.numpy()
     return data
 
 def scale255_for_standardize(data_cube, bias=4, factor=20):
