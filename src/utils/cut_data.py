@@ -6,7 +6,6 @@ import PIL.Image
 import astropy.io.fits
 import astropy.wcs
 import astroquery.vizier
-import tensorflow
 from . import get_catalog
 
 def get_spitzer_df(path, fac, b=[-0.8, 0.8], R=[0.1, 10], seed=None, catalog='churchwell', gal='mw'):
