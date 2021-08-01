@@ -112,8 +112,8 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, coord=None, verbose=False):
     return: dict of df
     '''
     if coord:
-        df1 = df1.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'Rout'})
-        df2 = df2.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'Rout'})
+        df1 = df1.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'r'})
+        df2 = df2.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'r'})
         pass
 
     df1 = df1.reset_index().set_index('name').rename(columns={'index': 'org_idx'})
