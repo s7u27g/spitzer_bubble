@@ -112,8 +112,8 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, coord=None, verbose=False):
     return: dict of df
     '''
     if coord:
-        df1 = df1.rename(columns={coord[0]: 'x', coord[1]: 'y'})
-        df2 = df2.rename(columns={coord[0]: 'x', coord[1]: 'y'})
+        df1 = df1.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'Rout'})
+        df2 = df2.rename(columns={coord[0]: 'x', coord[1]: 'y', coord[2]: 'Rout'})
         pass
 
     df1 = df1.reset_index().set_index('name').rename(columns={'index': 'org_idx'})
@@ -125,10 +125,10 @@ def split_tp_fp_fn(df1, df2, pos_th, size_th, coord=None, verbose=False):
     fn_df2 = df2.loc[~df2.index.isin(df1.loc[:,'match_obj'].unique())]
 
     if coord:
-        tp_df1 = tp_df1.rename(columns={'x': coord[0], 'y': coord[1]})
-        fp_df1 = fp_df1.rename(columns={'x': coord[0], 'y': coord[1]})
-        tp_df2 = tp_df2.rename(columns={'x': coord[0], 'y': coord[1]})
-        fn_df2 = fn_df2.rename(columns={'x': coord[0], 'y': coord[1]})
+        tp_df1 = tp_df1.rename(columns={'x': coord[0], 'y': coord[1], 'r': coord[2]})
+        fp_df1 = fp_df1.rename(columns={'x': coord[0], 'y': coord[1], 'r': coord[2]})
+        tp_df2 = tp_df2.rename(columns={'x': coord[0], 'y': coord[1], 'r': coord[2]})
+        fn_df2 = fn_df2.rename(columns={'x': coord[0], 'y': coord[1], 'r': coord[2]})
         pass
 
     ret = {
