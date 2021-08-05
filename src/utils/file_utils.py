@@ -38,6 +38,25 @@ def save_pickle(file, obj):
         pass
     return
 
+def save_as_reg(file, dictlist, coord, frame='fk5'):
+    reg_str = frame + '\n'
+
+    if len(coord) == 3: shape = 'circle'
+    else: shape = 'point'
+
+    for dict_ in dictlist:
+        row = shape + '(' + ', '.join([str(dict_[k]) for k in coord])
+        if shape == 'point': row += ')# point=x\n'
+        else: row += ')\n'
+        reg_str += row
+        pass
+
+    with open(file, 'w') as f:
+        f.write(reg_str)
+        pass
+
+    return
+
 def json2csv(file):
     pass
 
