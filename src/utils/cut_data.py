@@ -380,12 +380,19 @@ class CutTable(object):
 
     def calc_pix(self, obj, margin):
         series = self.df.loc[obj]
-        coord0_min = series[self.coord[0]] - margin*series['Rout']/60
-        coord1_min = series[self.coord[1]] - margin*series['Rout']/60
-        coord0_max = series[self.coord[0]] + margin*series['Rout']/60
-        coord1_max = series[self.coord[1]] + margin*series['Rout']/60
-        x_pix_min, y_pix_min = self.w.all_world2pix(coord0_max, coord1_min, 0)
-        x_pix_max, y_pix_max = self.w.all_world2pix(coord0_min, coord1_max, 0)
+#         coord0_min = series[self.coord[0]] - margin*series['Rout']/60
+#         coord1_min = series[self.coord[1]] - margin*series['Rout']/60
+#         coord0_max = series[self.coord[0]] + margin*series['Rout']/60
+#         coord1_max = series[self.coord[1]] + margin*series['Rout']/60
+#         x_pix_min, y_pix_min = self.w.all_world2pix(coord0_max, coord1_min, 0)
+#         x_pix_max, y_pix_max = self.w.all_world2pix(coord0_min, coord1_max, 0)
+        coord0 = series[self.coord[0]]
+        coord1 = series[self.coord[1]]
+        x_pix_cen, y_pix_cen = self.w.all_world2pix(coord0, coord1, 0)
+        x_pix_min = x_pix_cen - margin*series['Rout']/60/2
+        x_pix_max = x_pix_cen + margin*series['Rout']/60/2
+        y_pix_min = y_pix_cen - margin*series['Rout']/60/2
+        y_pix_max = y_pix_cen + margin*series['Rout']/60/2
 
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
@@ -397,7 +404,7 @@ class CutTable(object):
 #         print(x_pix_max.shape)
 #         print(y_pix_max.shape)
 
-        R_pix = int(((x_pix_max - x_pix_min)/2 + (y_pix_max - y_pix_min)/2)/2)
+        r_pix = int(((x_pix_max - x_pix_min)/2 + (y_pix_max - y_pix_min)/2)/2)
         x_pix, y_pix = self.w.all_world2pix(series[self.coord[0]], series[self.coord[1]], 0)
 
         ### 以下4行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
@@ -406,10 +413,10 @@ class CutTable(object):
 #         print(x_pix.shape)
 #         print(y_pix.shape)
 
-        x_pix_min = max(0, int(numpy.round(x_pix)) - R_pix)
-        x_pix_max = max(0, int(numpy.round(x_pix)) + R_pix)
-        y_pix_min = max(0, int(numpy.round(y_pix)) - R_pix)
-        y_pix_max = max(0, int(numpy.round(y_pix)) + R_pix)
+        x_pix_min = max(0, int(numpy.round(x_pix)) - r_pix)
+        x_pix_max = max(0, int(numpy.round(x_pix)) + r_pix)
+        y_pix_min = max(0, int(numpy.round(y_pix)) - r_pix)
+        y_pix_max = max(0, int(numpy.round(y_pix)) + r_pix)
         self.df.loc[obj, 'margin'] = margin
         self.df.loc[obj, 'x_pix_min'] = x_pix_min
         self.df.loc[obj, 'x_pix_max'] = x_pix_max
