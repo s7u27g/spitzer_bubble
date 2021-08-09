@@ -389,10 +389,10 @@ class CutTable(object):
         coord0 = series[self.coord[0]]
         coord1 = series[self.coord[1]]
         x_pix_cen, y_pix_cen = self.w.all_world2pix(coord0, coord1, 0)
-        x_pix_min = x_pix_cen - margin*series['Rout']/60/2
-        x_pix_max = x_pix_cen + margin*series['Rout']/60/2
-        y_pix_min = y_pix_cen - margin*series['Rout']/60/2
-        y_pix_max = y_pix_cen + margin*series['Rout']/60/2
+        x_pix_min = x_pix_cen - margin*series['Rout']*60/2
+        x_pix_max = x_pix_cen + margin*series['Rout']*60/2
+        y_pix_min = y_pix_cen - margin*series['Rout']*60/2
+        y_pix_max = y_pix_cen + margin*series['Rout']*60/2
 
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
