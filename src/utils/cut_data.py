@@ -367,6 +367,7 @@ class CutTable(object):
             'b': hdus[2].data,
         }
         self.w = astropy.wcs.WCS(self.header['g'])
+        self.pix_scale = self.header['g']['PIXSCAL1']
         [self.calc_pix(i, margin) for i in self.get_obj()]
         pass
 
@@ -389,10 +390,10 @@ class CutTable(object):
         coord0 = series[self.coord[0]]
         coord1 = series[self.coord[1]]
         x_pix_cen, y_pix_cen = self.w.all_world2pix(coord0, coord1, 0)
-        x_pix_min = x_pix_cen - margin*series['Rout']*60/2
-        x_pix_max = x_pix_cen + margin*series['Rout']*60/2
-        y_pix_min = y_pix_cen - margin*series['Rout']*60/2
-        y_pix_max = y_pix_cen + margin*series['Rout']*60/2
+        x_pix_min = x_pix_cen - margin*series['Rout']*60/self.pix_scale
+        x_pix_max = x_pix_cen + margin*series['Rout']*60/self.pix_scale
+        y_pix_min = y_pix_cen - margin*series['Rout']*60/self.pix_scale
+        y_pix_max = y_pix_cen + margin*series['Rout']*60/self.pix_scale
 
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
