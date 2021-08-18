@@ -36,21 +36,25 @@ class SpitzerDf(object):
 
             if catalog == 'churchwell':
                 self.df = get_catalog.churchwell_bubble()
+                self.df = self.df.rename(columns={'Reff': 'R'})
                 self.df = self.df.set_index('name')
                 pass
 
             elif catalog == 'mwp_1st':
                 self.df = get_catalog.mwp1st_bubble()
+                self.df = self.df.rename(columns={'Reff': 'R'})
                 self.df = self.df.set_index('name')
                 pass
 
             elif catalog == 'mwp_2nd':
                 self.df = get_catalog.mwp2nd_bubble()
+                self.df = self.df.rename(columns={'Reff': 'R'})
                 self.df = self.df.set_index('name')
                 pass
 
             elif catalog == 'wise':
                 self.df = get_catalog.wise_hii()
+                self.df = self.df.rename(columns={'Rad': 'R'})
                 self.df = self.df.set_index('name')
 
             else:
