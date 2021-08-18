@@ -1,4 +1,4 @@
-import pathlib
+Rimport pathlib
 import random
 import numpy
 import pandas
@@ -88,7 +88,7 @@ class SpitzerDf(object):
         l = sorted([int(i[8:11]) for i in self.files])
         l_bub = self.df.loc[:, 'l'].tolist()
         b_bub = self.df.loc[:, 'b'].tolist()
-        R_bub = self.df.loc[:, 'Rout'].tolist()
+        R_bub = self.df.loc[:, 'R'].tolist()
         # Generate coordinates and size randomly within specified range
         name, glon_li, glat_li, size_li, i_n = [], [], [], [], 1
         while len(glon_li) < len(self.df)*fac:
@@ -110,13 +110,13 @@ class SpitzerDf(object):
                 size_li.append(i_R)
                 i_n += 1
                 pass
-        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'R': size_li})
         nbub = nbub.set_index('name')
         # add columns for label
         self.df = self.df.assign(label=1)
         nbub = nbub.assign(label=0)
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
-        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+        self.df = self.df.loc[(self.df.loc[:, 'R']>R[0])&(self.df.loc[:, 'R']<R[1])]
         return
 
     def _add_random_df2(self, fac, b, R, seed):
@@ -132,9 +132,9 @@ class SpitzerDf(object):
 
         l_bub = self.df.loc[:, 'l'].tolist()
         b_bub = self.df.loc[:, 'b'].tolist()
-        R_bub = self.df.loc[:, 'Rout'].tolist()
+        R_bub = self.df.loc[:, 'R'].tolist()
 
-        hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
+        hist = numpy.histogram(self.df.loc[:,'R'], bins=25)
         num, y_ = hist[0]*fac, hist[1]
         diff_ = y_[1:]-y_[:-1]
 
@@ -173,13 +173,13 @@ class SpitzerDf(object):
                     flag = False
                     pass
 
-        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'R': size_li})
         nbub = nbub.set_index('name')
         # add columns for label
         self.df = self.df.assign(label=1)
         nbub = nbub.assign(label=0)
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
-        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+        self.df = self.df.loc[(self.df.loc[:, 'R']>R[0])&(self.df.loc[:, 'R']<R[1])]
 
         under_0p0 = self.df.loc[:, 'l']<0
         for i in self.df[under_0p0].loc[:, 'l'].index:
@@ -201,9 +201,9 @@ class SpitzerDf(object):
 
         l_bub = numpy.array(self.df.loc[:, 'l'].tolist())
         b_bub = numpy.array(self.df.loc[:, 'b'].tolist())
-        R_bub = numpy.array(self.df.loc[:, 'Rout'].tolist())
+        R_bub = numpy.array(self.df.loc[:, 'R'].tolist())
 
-        hist = numpy.histogram(self.df.loc[:,'Rout'], bins=25)
+        hist = numpy.histogram(self.df.loc[:,'R'], bins=25)
         num, y_ = hist[0]*fac, hist[1]
         diff_ = y_[1:]-y_[:-1]
 
@@ -243,13 +243,13 @@ class SpitzerDf(object):
                     flag = False
                     pass
 
-        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'Rout': size_li})
+        nbub = pandas.DataFrame({'name': name, 'l': glon_li, 'b': glat_li, 'R': size_li})
         nbub = nbub.set_index('name')
         # add columns for label
         self.df = self.df.assign(label=1)
         nbub = nbub.assign(label=0)
         self.df = self.df.append(nbub)[self.df.columns.tolist()]
-        self.df = self.df.loc[(self.df.loc[:, 'Rout']>R[0])&(self.df.loc[:, 'Rout']<R[1])]
+        self.df = self.df.loc[(self.df.loc[:, 'R']>R[0])&(self.df.loc[:, 'R']<R[1])]
 
         under_0p0 = self.df.loc[:, 'l']<0
         for i in self.df[under_0p0].loc[:, 'l'].index:
@@ -299,8 +299,8 @@ class SpitzerDf(object):
         pass
 
     def limit_R(self, R_min, R_max):
-        mask_min = self.df.loc[:, 'Rout']>R_min
-        mask_max = self.df.loc[:, 'Rout']<R_max
+        mask_min = self.df.loc[:, 'R']>R_min
+        mask_max = self.df.loc[:, 'R']<R_max
         self.df = self.df.loc[mask_min&mask_max]
         return
 
@@ -381,19 +381,19 @@ class CutTable(object):
 
     def calc_pix(self, obj, margin):
         series = self.df.loc[obj]
-#         coord0_min = series[self.coord[0]] - margin*series['Rout']/60
-#         coord1_min = series[self.coord[1]] - margin*series['Rout']/60
-#         coord0_max = series[self.coord[0]] + margin*series['Rout']/60
-#         coord1_max = series[self.coord[1]] + margin*series['Rout']/60
+#         coord0_min = series[self.coord[0]] - margin*series['R']/60
+#         coord1_min = series[self.coord[1]] - margin*series['R']/60
+#         coord0_max = series[self.coord[0]] + margin*series['R']/60
+#         coord1_max = series[self.coord[1]] + margin*series['R']/60
 #         x_pix_min, y_pix_min = self.w.all_world2pix(coord0_max, coord1_min, 0)
 #         x_pix_max, y_pix_max = self.w.all_world2pix(coord0_min, coord1_max, 0)
         coord0 = series[self.coord[0]]
         coord1 = series[self.coord[1]]
         x_pix_cen, y_pix_cen = self.w.all_world2pix(coord0, coord1, 0)
-        x_pix_min = x_pix_cen - margin*series['Rout']*60/self.pix_scale
-        x_pix_max = x_pix_cen + margin*series['Rout']*60/self.pix_scale
-        y_pix_min = y_pix_cen - margin*series['Rout']*60/self.pix_scale
-        y_pix_max = y_pix_cen + margin*series['Rout']*60/self.pix_scale
+        x_pix_min = x_pix_cen - margin*series['R']*60/self.pix_scale
+        x_pix_max = x_pix_cen + margin*series['R']*60/self.pix_scale
+        y_pix_min = y_pix_cen - margin*series['R']*60/self.pix_scale
+        y_pix_max = y_pix_cen + margin*series['R']*60/self.pix_scale
 
         ### 以下8行(コメントアウトを含む)は一時的なもの (all_world2pixのマニュアルを見ないといけない)
         if len(x_pix_min.shape) != 0: x_pix_min = x_pix_min[0]
