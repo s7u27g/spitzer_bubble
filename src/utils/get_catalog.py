@@ -17,8 +17,8 @@ def churchwell_bubble():
     bub_2006.rename(columns={'__CPA2006_': 'name'}, inplace=True)
     bub_2006.rename(columns={'GLON': 'l'}, inplace=True)
     bub_2006.rename(columns={'GLAT': 'b'}, inplace=True)
-    bub_2006.rename(columns={'__R_': '<R>'}, inplace=True)
-    bub_2006.rename(columns={'__T_': '<T>'}, inplace=True)
+    bub_2006.rename(columns={'__R_': 'Reff'}, inplace=True)
+    bub_2006.rename(columns={'__T_': 'Teff'}, inplace=True)
     bub_2006.rename(columns={'MFlags': 'Flags'}, inplace=True)
     bub_2006.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
     bub_2006.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
@@ -27,8 +27,8 @@ def churchwell_bubble():
     bub_2007.rename(columns={'__CWP2007_': 'name'}, inplace=True)
     bub_2007.rename(columns={'GLON': 'l'}, inplace=True)
     bub_2007.rename(columns={'GLAT': 'b'}, inplace=True)
-    bub_2007.rename(columns={'__R_': '<R>'}, inplace=True)
-    bub_2007.rename(columns={'__T_': '<T>'}, inplace=True)
+    bub_2007.rename(columns={'__R_': 'Reff'}, inplace=True)
+    bub_2007.rename(columns={'__T_': 'Teff'}, inplace=True)
     bub_2007.rename(columns={'MFlags': 'Flags'}, inplace=True)
     bub_2007.rename(columns={'_RA.icrs': 'RA.icrs'}, inplace=True)
     bub_2007.rename(columns={'_DE.icrs': 'DE.icrs'}, inplace=True)
@@ -58,11 +58,11 @@ def mwp1st_bubble():
     mwp_small.rename(columns={'MWP': 'name'}, inplace=True)
     mwp_small.rename(columns={'GLON': 'l'}, inplace=True)
     mwp_small.rename(columns={'GLAT': 'b'}, inplace=True)
-    mwp_small.rename(columns={'Reff': 'Rout'}, inplace=True)
+    # mwp_small.rename(columns={'Reff': 'Rout'}, inplace=True)
     mwp_large.rename(columns={'MWP': 'name'}, inplace=True)
     mwp_large.rename(columns={'GLON': 'l'}, inplace=True)
     mwp_large.rename(columns={'GLAT': 'b'}, inplace=True)
-    mwp_large.rename(columns={'Reff': 'Rout'}, inplace=True)
+    # mwp_large.rename(columns={'Reff': 'Rout'}, inplace=True)
 
     mwp_small = mwp_small.set_index('name')
     mwp_large = mwp_large.set_index('name')
@@ -76,7 +76,7 @@ def mwp2nd_bubble():
     mwp.rename(columns={'MWP': 'name'}, inplace=True)
     mwp.rename(columns={'GLON': 'l'}, inplace=True)
     mwp.rename(columns={'GLAT': 'b'}, inplace=True)
-    mwp.rename(columns={'Reff': 'Rout'}, inplace=True)
+    # mwp.rename(columns={'Reff': 'Rout'}, inplace=True)
     mwp = mwp.set_index('name')
     return mwp.reset_index()
 
@@ -92,9 +92,10 @@ def wise_hii():
     df.rename(columns={'WISE': 'name'}, inplace=True)
     df.rename(columns={'GLON': 'l'}, inplace=True)
     df.rename(columns={'GLAT': 'b'}, inplace=True)
-    df.rename(columns={'Rad': 'Rout'}, inplace=True)
+    # df.rename(columns={'Rad': 'Rout'}, inplace=True)
     df.rename(columns={'Name': 'Hii_name'}, inplace=True)
-    df.loc[:, 'Rout'] = df.loc[:, 'Rout']/60
+    # df.loc[:, 'Rout'] = df.loc[:, 'Rout']/60
+    df.loc[:, 'Rad'] = df.loc[:, 'Rad']/60
     df = df.set_index('name')
     return df.reset_index()
 
