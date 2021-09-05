@@ -135,13 +135,13 @@ def normalize_3sig(tensor):
     '''
     s = tensor.shape
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
-    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
-    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
     _max = t_mean+(3*t_std)
     tensor = tf.where(tensor>_max, _max, tensor)
-    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
     tensor = tensor - t_min
-    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
     tensor = tensor/t_max
     tensor = tf.reshape(tensor, s)
     return tensor
@@ -152,15 +152,15 @@ def normalie_3sig_v2(tensor):
     '''
     s = tensor.shape
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
-    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
-    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
     _max = t_mean+(3*t_std)
     _min = t_mean-(3*t_std)
     tensor = tf.where(tensor>_max, _max, tensor)
     tensor = tf.where(tensor<_min, _min, tensor)
-    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
     tensor = tensor - t_min
-    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
     tensor = tensor/t_max
     tensor = tf.reshape(tensor, s)
     return tensor
@@ -171,13 +171,13 @@ def normalize_all_3sig(tensor):
     '''
     s = tensor.shape
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2]*s[3]])
-    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
-    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
     _max = t_mean+(3*t_std)
     tensor = tf.where(tensor>_max, _max, tensor)
-    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
     tensor = tensor - t_min
-    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
     tensor = tensor/t_max
     tensor = tf.reshape(tensor, s)
     return tensor
