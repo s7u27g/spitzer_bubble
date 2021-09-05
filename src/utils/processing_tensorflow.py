@@ -146,7 +146,7 @@ def normalize_3sig(tensor):
     tensor = tf.reshape(tensor, s)
     return tensor
 
-def normalie_3sig_v2(tensor):
+def normalize_3sig_v2(tensor):
     '''
     tensor: the shape must be nhwc
     '''
