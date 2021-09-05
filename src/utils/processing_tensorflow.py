@@ -135,38 +135,57 @@ def normalize_3sig(tensor):
     '''
     s = tensor.shape
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
-    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
-    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
     _max = t_mean+(3*t_std)
     tensor = tf.where(tensor>_max, _max, tensor)
-    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
     tensor = tensor - t_min
-    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
+    tensor = tensor/t_max
+    tensor = tf.reshape(tensor, s)
+    return tensor
+
+def normalie_3sig_v2(tensor):
+    '''
+    tensor: the shape must be nhwc
+    '''
+    s = tensor.shape
+    tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
+    _max = t_mean+(3*t_std)
+    _min = t_mean-(3*t_std)
+    tensor = tf.where(tensor>_max, _max, tensor)
+    tensor = tf.where(tensor<_min, _min, tensor)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
+    tensor = tensor - t_min
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
     tensor = tensor/t_max
     tensor = tf.reshape(tensor, s)
     return tensor
 
 def normalize_all_3sig(tensor):
     '''
-    tensor: The shape must be NHWC
+    tensor: the shape must be nhwc
     '''
     s = tensor.shape
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2]*s[3]])
-    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
-    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
+    t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=true)
+    t_std = tf.math.reduce_std(tensor, axis=1, keepdims=true)
     _max = t_mean+(3*t_std)
     tensor = tf.where(tensor>_max, _max, tensor)
-    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
+    t_min = tf.math.reduce_min(tensor, axis=1, keepdims=true)
     tensor = tensor - t_min
-    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=True)
+    t_max = tf.math.reduce_max(tensor, axis=1, keepdims=true)
     tensor = tensor/t_max
     tensor = tf.reshape(tensor, s)
     return tensor
 
 def remove_star(tensor, kernel_size):
     '''
-    tensor: The shape must be NHWC
-    kernel_size: The type must be list or tuple
+    tensor: the shape must be nhwc
+    kernel_size: the type must be list or tuple
     '''
     tensor = tfa.image.median_filter2d(
         image=tensor,
@@ -176,7 +195,7 @@ def remove_star(tensor, kernel_size):
 
 # def crop_random(tensor, fac):
 #     '''
-#     tensor: The shape must be (num, y, x, color)
+#     tensor: the shape must be (num, y, x, color)
 #     fac: crop factor
 #     '''
 #     tensor = tf.image.central_crop(
