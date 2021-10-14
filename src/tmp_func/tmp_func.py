@@ -5,6 +5,7 @@ def func1(df, w):
     '''
     ピクセル値をDataFrameに付与
     '''
+    from astropy.coordinates import SkyCoord
     ra = df.loc[:, 'ra']
     dec = df.loc[:, 'dec']
     x_pix, y_pix = w.world_to_pixel(
@@ -51,3 +52,29 @@ def make_dist_arr(s):
     y, x = np.meshgrid(_, _)
     dist = (y**2 + x**2)**(1/2)
     return dist
+
+### 文字列を hdm 形式に整形する関数
+def convert_hdms(list_):
+    new_coord = []
+    for c in list_:
+        if len(c) == 2:
+            ms = c[-1].split('.')
+            
+            if len(ms) == 2:
+                dms = [c[0], ms[0], str(60*float(ms[1])/10)]
+                pass
+            
+            else:
+                dms = [c[0], ms[0], '0.0']
+                pass
+            
+            new_coord.append(':'.join(dms))
+            pass
+        
+        else:
+            new_coord.append(':'.join(c))
+            pass
+        
+        pass
+    
+    return new_coord
