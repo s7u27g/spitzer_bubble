@@ -141,7 +141,7 @@ def calc_prob2(models, data, cut_shape, sld_fac, processing_func):
 
     yx_num = calc_yx_num(cut_shape, slide_pix, map_shape)
     st_idx = get_indices(slide_pix, *yx_num)
-    resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 0.2)
+    resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 2.0)
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
 
     inf_num = 2048
