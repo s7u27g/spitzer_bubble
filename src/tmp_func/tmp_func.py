@@ -15,6 +15,24 @@ def func1(df, w):
     df.loc[:, 'y_pix'] = np.round(y_pix).astype('int32')
     return df
 
+def count_point_around_circle(circle_df, point_df, size_fac):
+    
+    radius = circle_df.R*60/2
+    x_cen = (circle_df.x_pix_max + circle_df.x_pix_min)//2
+    y_cen = (circle_df.y_pix_max + circle_df.y_pix_min)//2
+    
+    p_li = []
+    p_num = []
+    for x, y, r in zip(x_cen, y_cen, radius):
+        x -= point_df.loc[:, 'x_pix']
+        y -= point_df.loc[:, 'y_pix']
+        mask = (x**2 + y**2)**(1/2)<r*size_fac
+        p_li.append(','.join(point_df.index[mask].to_list()))
+        p_num.append(np.sum(mask))
+        pass
+    
+    return p_li, p_num
+
 def calc_dist(circle_df, point_df, column_name):
     dist_li = []
     for circle, point in circle_df.loc[:, column_name].str.split(',').items():
@@ -42,7 +60,7 @@ def make_gauss_kernel(sigma):
     k = f((x**2 + y**2)**(1/2))
     return k/np.sum(k)
 
-### 円形マスク生成関数
+### 中心からの距離 array を作る関数
 def make_dist_arr(s):
     '''
     s: pixcel
@@ -52,6 +70,18 @@ def make_dist_arr(s):
     y, x = np.meshgrid(_, _)
     dist = (y**2 + x**2)**(1/2)
     return dist
+
+### 円形マスク生成関数
+def make_circle_mask(s):
+    '''
+    s: pixcel
+    return: bool np.array (dim2)
+    '''
+    _ = [(i - s//2)/(s//2) for i in range(s)]
+    y, x = np.meshgrid(_, _)
+    dist = y**2 + x**2
+    mask_cir = (dist<1)
+    return mask_cir
 
 ### 文字列を hdm 形式に整形する関数
 def convert_hdms(list_):
