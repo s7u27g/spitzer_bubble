@@ -137,10 +137,21 @@ def make_regfile_cir(infos, file, coord='fk5'):
 def make_regfile_dot(infos, file, coord='fk5'):
     pass
 
+def _open_json(file):
+    '''
+    same func exist in src/utils/file_utils
+    '''
+    import simplejson as json
+    with open(file, 'r') as f:
+        infos = json.load(f)
+        pass
+    return infos
+
 def json2reg(json_path, shape='circle'):
+    import simplejson as json
     json_path = path_formatter(json_path)
     save_path = json_path.parent.parent/'reg'/(json_path.stem+'.reg')
-    df = pd.DataFrame(file_utils.open_json(json_path))
+    df = pd.DataFrame(_open_json(json_path))
     df['R'] *= 60
     infos = df.to_dict('records')
     if shape=='circle':
