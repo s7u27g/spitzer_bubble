@@ -108,3 +108,44 @@ def convert_hdms(list_):
         pass
     
     return new_coord
+
+def path_formatter(path):
+    if isinstance(path, pathlib.Path):
+        return path
+    else:
+        return pathlib.Path(path)
+    
+def make_regfile_cir(infos, file, coord='fk5'):
+    region_info = 'fk5\n'
+    
+    for info in infos:
+        cir = 'circle(' + \
+              str(info['ra']) + ',' + \
+              str(info['dec']) + ',' + \
+              str(info['R']) + \
+              '")\n'
+        region_info += cir
+        pass
+    
+    with open(file, 'w') as f:
+        f.write(region_info)
+        pass
+    
+    return
+
+def make_regfile_dot(infos, file, coord='fk5'):
+    pass
+
+def json2reg(json_path, shape='circle'):
+    json_path = path_formatter(json_path)
+    save_path = json_path.parent.parent/'reg'/(json_path.stem+'.reg')
+    df = pd.DataFrame(file_utils.open_json(json_path))
+    df['R'] *= 60
+    infos = df.to_dict('records')
+    if shape=='circle':
+        make_regfile_cir(infos=infos, file=save_path, coord='fk5')
+        pass
+    elif shape=='point':
+        make_regfile_dot(infos=infos, file=save_path, coord='fk5')
+        pass
+    pass
