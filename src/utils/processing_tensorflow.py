@@ -173,8 +173,9 @@ def normalize_3sig_v3(tensor):
     tensor = tf.reshape(tensor, [s[0], s[1]*s[2], s[3]])
     t_mean = tf.math.reduce_mean(tensor, axis=1, keepdims=True)
     t_std = tf.math.reduce_std(tensor, axis=1, keepdims=True)
-    _max = t_mean+(3*(t_std**2))
-    _min = t_mean-(3*(t_std**2))
+    t_sig = t_std**2
+    _max = t_mean+(3*t_sig)
+    _min = t_mean-(3*t_sig)
     tensor = tf.where(tensor>_max, _max, tensor)
     tensor = tf.where(tensor<_min, _min, tensor)
     t_min = tf.math.reduce_min(tensor, axis=1, keepdims=True)
