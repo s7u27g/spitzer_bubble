@@ -73,7 +73,19 @@ def make_dist_arr(s):
     return dist
 
 ### 円形マスク生成関数
-def make_circle_mask(s):
+# def make_circle_mask(s):
+#     '''
+#     s: pixcel
+#     return: bool np.array (dim2)
+#     '''
+#     _ = [(i - s//2)/(s//2) for i in range(s)]
+#     y, x = np.meshgrid(_, _)
+#     dist = y**2 + x**2
+#     mask_cir = (dist<1)
+#     return mask_cir
+
+### 円形マスク生成関数 (サイズ自由)
+def make_circle_mask(s, fac=1):
     '''
     s: pixcel
     return: bool np.array (dim2)
@@ -81,7 +93,7 @@ def make_circle_mask(s):
     _ = [(i - s//2)/(s//2) for i in range(s)]
     y, x = np.meshgrid(_, _)
     dist = y**2 + x**2
-    mask_cir = (dist<1)
+    mask_cir = (np.sqrt(dist)<fac)
     return mask_cir
 
 ### 文字列を hdm 形式に整形する関数
@@ -135,6 +147,20 @@ def make_regfile_cir(infos, file, coord='fk5'):
     return
 
 def make_regfile_dot(infos, file, coord='fk5'):
+    region_info = 'fk5\n'
+    
+    for info in infos:
+        point = 'point(' + \
+              str(info['ra']) + ',' + \
+              str(info['dec']) + \
+              ') # point=x\n'
+        region_info += point 
+        pass
+    
+    with open(file, 'w') as f:
+        f.write(region_info)
+        pass
+    
     pass
 
 def _open_json(file):
@@ -152,9 +178,9 @@ def json2reg(json_path, shape='circle'):
     json_path = path_formatter(json_path)
     save_path = json_path.parent.parent/'reg'/(json_path.stem+'.reg')
     df = pd.DataFrame(_open_json(json_path))
-    df['R'] *= 60
     infos = df.to_dict('records')
     if shape=='circle':
+        df['R'] *= 60
         make_regfile_cir(infos=infos, file=save_path, coord='fk5')
         pass
     elif shape=='point':
