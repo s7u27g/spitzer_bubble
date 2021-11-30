@@ -178,15 +178,16 @@ def json2reg(json_path, shape='circle', R_unit=None):
     json_path = path_formatter(json_path)
     save_path = json_path.parent.parent/'reg'/(json_path.stem+'.reg')
     df = pd.DataFrame(_open_json(json_path))
-    infos = df.to_dict('records')
     if shape=='circle':
         if R_unit=='deg': df['R'] *= 60
         elif R_unit=='arcmin': pass
         elif R_unit=='arcsec': df['R'] /= 60       
         else: pass
+        infos = df.to_dict('records')
         make_regfile_cir(infos=infos, file=save_path, coord='fk5')
         pass
     elif shape=='point':
         make_regfile_dot(infos=infos, file=save_path, coord='fk5')
+        infos = df.to_dict('records')
         pass
     pass
