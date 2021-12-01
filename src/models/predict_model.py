@@ -154,7 +154,6 @@ def calc_prob_(models, data, cut_shape, sld_fac, processing_func):
         d = resize(d, input_shape)
         d = processing_func(d)
         arr.append(d.numpy())
-        print(d)
 
         for prob_, model in zip(prob, models):
             prob_ += inference(model, d, inf_num)
@@ -168,6 +167,7 @@ def calc_prob_(models, data, cut_shape, sld_fac, processing_func):
         'y_org': data.shape[0], 'x_org': data.shape[1],
     }
 
+    arr = np.concatenate(arr, axis=0)
     return info, prob, arr
 
 def calc_prob2(models, data, cut_shape, sld_fac, processing_func):
