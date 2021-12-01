@@ -148,13 +148,13 @@ def calc_prob_(models, data, cut_shape, sld_fac, processing_func):
     prob = [[] for i in range(len(models))]
     arr = []
     for i in tqdm.tqdm(range(resize_loop)):
-        print(i)
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
         d = clip_data_st(data, _st_idx, cut_shape)
         d = tf.convert_to_tensor(d)
         d = resize(d, input_shape)
         d = processing_func(d)
         arr.append(d.numpy())
+        print(d)
 
         for prob_, model in zip(prob, models):
             prob_ += inference(model, d, inf_num)
