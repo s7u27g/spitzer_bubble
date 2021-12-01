@@ -143,6 +143,7 @@ def calc_prob_(models, data, cut_shape, sld_fac, processing_func):
     st_idx = get_indices(slide_pix, *yx_num)
     resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 1.5)
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
+    print(len(st_idx))
 
     inf_num = 2048
     prob = [[] for i in range(len(models))]
