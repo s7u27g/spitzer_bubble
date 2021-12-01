@@ -143,15 +143,13 @@ def calc_prob_(models, data, cut_shape, sld_fac, processing_func):
     st_idx = get_indices(slide_pix, *yx_num)
     resize_num = calc_resize_num((y_size, x_size), ch_num, dtype, 1.5)
     resize_loop = calc_loop_num(yx_num[0]*yx_num[1], resize_num)
-    print(resize_num)
-    print(resize_loop)
 
     inf_num = 2048
     prob = [[] for i in range(len(models))]
     arr = []
     for i in tqdm.tqdm(range(resize_loop)):
+        print(i)
         _st_idx = st_idx[i*resize_num:(i+1)*resize_num]
-        print(len(_st_idx))
         d = clip_data_st(data, _st_idx, cut_shape)
         d = tf.convert_to_tensor(d)
         d = resize(d, input_shape)
