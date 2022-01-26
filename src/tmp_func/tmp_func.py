@@ -34,9 +34,18 @@ def count_point_around_circle(circle_df, point_df, size_fac):
     
     return p_li, p_num
 
-def calc_dist(circle_df, point_df, column_name):
+def calc_dist(circle_df, point_df, column_name, rm_obj=None):
     dist_li = []
     for circle, point in circle_df.loc[:, column_name].str.split(',').items():
+        
+        if rm_obj:
+            _point = []
+            for p in point:
+                if p in rm_obj:pass
+                else: _point.append(p)
+            point = _point
+            pass
+            
         for p in point:
             x_pix = point_df.loc[p, 'x_pix']
             y_pix = point_df.loc[p, 'y_pix']
@@ -44,7 +53,10 @@ def calc_dist(circle_df, point_df, column_name):
             y_cen = (circle_df.loc[circle, 'y_pix_max'] + circle_df.loc[circle, 'y_pix_min'])//2
             dist = ((x_pix-x_cen)**2 + (y_pix-y_cen)**2)**(1/2)
             dist /= circle_df.loc[circle, 'R']*60/2
-            dist_li.append(dist)
+            R_pix = circle_df.loc[circle, 'x_pix_max'] - circle_df.loc[circle, 'x_pix_min']
+            R_pix = (R_pix/circle_df.loc[circle, 'margin'])/2
+            R_pix = R_pix*np.pi
+            dist_li.append([dist, len(point), R_pix])
             pass
         pass
     return dist_li
